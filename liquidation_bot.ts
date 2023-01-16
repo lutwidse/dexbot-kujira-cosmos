@@ -92,7 +92,7 @@ const KUJI_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p
 
             var claimable_idxs = []
             for(let i of bids_json.bids){
-                if (parseInt(i["pending_liquidated_collateral"]) == 0) {
+                if (parseInt(i["pending_liquidated_collateral"]) > 0) {
                     claimable_idxs.push(i["idx"])
                 }
             }
