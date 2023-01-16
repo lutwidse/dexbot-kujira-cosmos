@@ -16,7 +16,7 @@ const ATOM_USK_CONTRACT = "kujira1yum4v0v5l92jkxn8xpn9mjg7wuldk784ctg424ue8gqvdp
 const ATOM_USK_DENOM = "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2";
 
 const ORCA_CONTRACT = "kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfc";
-const ORCA_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk";
+const KUJI_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk";
 
 (async () => {
 
@@ -42,7 +42,7 @@ const ORCA_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p
                 contract: ATOM_USK_CONTRACT,
                 msg: toUtf8(JSON.stringify(msg_swap())
                 ),
-                "funds": coins(atom*DENOM_AMOUNT, ATOM_USK_DENOM)
+                "funds": coins(atom*DENOM_AMOUNT, ATOM_DENOM)
             },
             )
         }], "auto")
@@ -56,7 +56,7 @@ const ORCA_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p
                 contract: ORCA_CONTRACT,
                 msg: toUtf8(JSON.stringify(msg_submit_bid(premium))
                 ),
-                "funds": coins(bid_amount*DENOM_AMOUNT, ORCA_DENOM)
+                "funds": coins(bid_amount*DENOM_AMOUNT, KUJI_DENOM)
             },
             )
         }], "auto")
