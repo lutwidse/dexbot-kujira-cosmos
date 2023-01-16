@@ -102,7 +102,7 @@ const KUJI_DENOM = "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p
     }
 
     async function getTokenBalance(denom) : Promise<string> {
-        const balances = axios.get('https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/kujira1pj4l96774y9fh09wsf3twse55sfxjrc5qxt8rs?pagination.limit=1000', {
+        const balances = axios.get("https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/" +  signerAddress + "?pagination.limit=1000", {
 
         }).then(function (response) {
             for(let i of response.data.balances){
