@@ -27,5 +27,14 @@ export function msg_swap() {
     }
 }
 
+export function msg_submit_bid(premium: number) {
+    return {
+        "submit_bid": {
+            "premium_slot": premium,
+            "delegate": "kujira16a03hk5ev6963a4yj3kcrvmh4hej3w3j70kv2n"
+        }
+    }
+}
+
 // Orca
 // ...
