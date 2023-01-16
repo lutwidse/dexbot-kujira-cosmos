@@ -8,7 +8,8 @@ const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
 
 const RPC_ENDPOINT = 'https://rpc.kaiyo.kujira.setten.io';
-const MNEMONIC = '...';
+const MNEMONIC =
+  '...';
 
 const DENOM_AMOUNT = 1000000;
 
@@ -87,53 +88,45 @@ const KUJI_DENOM =
     const data =
       '0a416b756a697261317138793436786739393363716733786a7963797732333334746570657937646d6e68356a6b3270737574727a33666336397465736b637467666312687b22626964735f62795f75736572223a7b22626964646572223a226b756a69726131706a346c3936373734793966683039777366337477736535357366786a726335717874387273222c226c696d6974223a33312c2273746172745f6166746572223a2230227d7d';
 
-    const bids = axios
-      .post('https://rpc.kaiyo.kujira.setten.io', {
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'abci_query',
-        params: {
-          path: '/cosmwasm.wasm.v1.Query/SmartContractState',
-          data: data,
-          prove: false
-        }
-      })
-      .then(function (response) {
-        // 1文字目にゴミが降ってくるので削除
-        const bids =
-          '{' +
-          ConversionUtils.base64ToString(
-            response.data.result.response.value
-          ).slice(2);
-        const bids_json = JSON.parse(bids);
+    const response = await axios.post('https://rpc.kaiyo.kujira.setten.io', {
+      jsonrpc: '2.0',
+      id: 0,
+      method: 'abci_query',
+      params: {
+        path: '/cosmwasm.wasm.v1.Query/SmartContractState',
+        data: data,
+        prove: false
+      }
+    });
+    // 1文字目にゴミが降ってくるので削除
+    const bids =
+      '{' +
+      ConversionUtils.base64ToString(response.data.result.response.value).slice(
+        2
+      );
+    const bids_json = JSON.parse(bids);
 
-        let claimable_idxs = [];
-        for (let i of bids_json.bids) {
-          if (parseInt(i['pending_liquidated_collateral']) > 0) {
-            claimable_idxs.push(i['idx']);
-          }
-        }
-        return claimable_idxs;
-      });
-    return bids;
+    let claimable_idxs = [];
+    for (let i of bids_json.bids) {
+      if (parseInt(i['pending_liquidated_collateral']) > 0) {
+        claimable_idxs.push(i['idx']);
+      }
+    }
+    return claimable_idxs;
   }
 
   async function getTokenBalance(denom): Promise<string> {
-    const balances = axios
-      .get(
-        'https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/' +
-          signerAddress +
-          '?pagination.limit=1000',
-        {}
-      )
-      .then(function (response) {
-        for (let i of response.data.balances) {
-          if (i['denom'] == denom) {
-            return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
-          }
-        }
-      });
-    return balances;
+    const response = await axios.get(
+      'https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/' +
+        signerAddress +
+        '?pagination.limit=1000',
+      {}
+    );
+    for (let i of response.data.balances) {
+      if (i['denom'] == denom) {
+        return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
+      }
+    }
   }
 
   // FIN
@@ -145,12 +138,12 @@ const KUJI_DENOM =
 
   // Claim
   /*getClaimableBids().then(function (ret) {
-        console.log(ret)
-    })*/
+    console.log(ret);
+  });*/
 
   // claimの処理は未確認なので後日追加
 
   /*getTokenBalance(ATOM_DENOM).then(function (ret) {
-        console.log(ret)
-    })*/
+    console.log(ret);
+  });*/
 })();
