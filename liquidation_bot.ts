@@ -17,7 +17,7 @@ const ATOM_USK_CONTRACT =
 const ATOM_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-const ORCA_CONTRACT =
+const ORCA_MARKET_USK_ATOM_CONTRACT =
   'kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfc';
 const KUJI_DENOM =
   'factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk';
@@ -37,7 +37,7 @@ const KUJI_DENOM =
     }
   );
 
-  function swapAtomToUsk(atom) {
+  function swapAtomToUsk(atom: number) {
     client.signAndBroadcast(
       signerAddress,
       [
@@ -55,7 +55,7 @@ const KUJI_DENOM =
     );
   }
 
-  function submitBid(premium, bid_amount) {
+  function submitBid(premium: number, bid_amount: number) {
     client.signAndBroadcast(
       signerAddress,
       [
@@ -63,7 +63,7 @@ const KUJI_DENOM =
           typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
           value: MsgExecuteContract.fromPartial({
             sender: signerAddress,
-            contract: ORCA_CONTRACT,
+            contract: ORCA_MARKET_USK_ATOM_CONTRACT,
             msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
             funds: coins(bid_amount * DENOM_AMOUNT, KUJI_DENOM)
           })
@@ -74,9 +74,11 @@ const KUJI_DENOM =
   }
 
   async function getClaimableBids(): Promise<string[]> {
+    // 16進数でエンコード
     const payload =
       'A' +
-      'kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfch{"bids_by_user":{"bidder":"' +
+      ORCA_MARKET_USK_ATOM_CONTRACT +
+      'h{"bids_by_user":{"bidder":"' +
       signerAddress +
       '","limit":31,"start_after":"0"}}';
     const data =
@@ -97,6 +99,7 @@ const KUJI_DENOM =
       }
     });
     // 1文字目にゴミが降ってくるので削除
+    // base64でデコード
     const bids =
       '{' +
       ConversionUtils.base64ToString(response.data.result.response.value).slice(
@@ -113,7 +116,7 @@ const KUJI_DENOM =
     return claimable_idxs;
   }
 
-  async function getTokenBalance(denom): Promise<string> {
+  async function getTokenBalance(denom: string): Promise<string> {
     const response = await axios.get(
       'https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/' +
         signerAddress +
@@ -138,7 +141,7 @@ const KUJI_DENOM =
   /*
     getClaimableBids().then(function (ret) {
         console.log(ret);
-    });}
+    });
     */
 
   // claimの処理は未確認なので後日追加
