@@ -1,4 +1,5 @@
-function msg_submit_order(uusk_amount: string, collateral_liquidation_price: string) {
+// FIN
+export function msg_submit_order(uusk_amount: string, collateral_liquidation_price: string) {
     return {
         "submit_order": {
           "amount": (parseInt(uusk_amount)*1000000).toString(),
@@ -10,7 +11,7 @@ function msg_submit_order(uusk_amount: string, collateral_liquidation_price: str
     }
 }
 
-function msg_withdraw_order(order_idxs:string[]) {
+export function msg_withdraw_order(order_idxs:string[]) {
     return {
         "withdraw_orders": {
           "order_idxs": [
@@ -19,3 +20,12 @@ function msg_withdraw_order(order_idxs:string[]) {
         }
     }
 }
+
+export function msg_swap() {
+    return {
+        "swap":{}
+    }
+}
+
+// Orca
+// ...
