@@ -8,8 +8,7 @@ const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
 
 const RPC_ENDPOINT = 'https://rpc.kaiyo.kujira.setten.io';
-const MNEMONIC =
-  '...';
+const MNEMONIC = '...';
 
 const DENOM_AMOUNT = 1000000;
 
@@ -75,18 +74,17 @@ const KUJI_DENOM =
   }
 
   async function getClaimableBids(): Promise<string[]> {
-    // 変換に差分が生まれてしまうので仕方なくハードコーディング
-    // https://superdev.org/encode-base16/
-    // https://superdev.org/decode-base16/
-    /*const data = "0a" + ("A" + signerAddress + "h{'bids_by_user':{'bidder':" + signerAddress + ",'limit':31,'start_after':'0'}}").split("")
-            .map(c => c.charCodeAt(0).toString(16).padStart(2, "0"))
-            .join("")
-        */
-
-    // アドレスごとに変わる
-    // 調べ方はDMで聞いてください
+    const payload =
+      'A' +
+      'kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfch{"bids_by_user":{"bidder":"' +
+      signerAddress +
+      '","limit":31,"start_after":"0"}}';
     const data =
-      '0a416b756a697261317138793436786739393363716733786a7963797732333334746570657937646d6e68356a6b3270737574727a33666336397465736b637467666312687b22626964735f62795f75736572223a7b22626964646572223a226b756a69726131706a346c3936373734793966683039777366337477736535357366786a726335717874387273222c226c696d6974223a33312c2273746172745f6166746572223a2230227d7d';
+      '0a' +
+      payload
+        .split('')
+        .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('');
 
     const response = await axios.post('https://rpc.kaiyo.kujira.setten.io', {
       jsonrpc: '2.0',
@@ -137,13 +135,16 @@ const KUJI_DENOM =
   //submitBid(1,1)
 
   // Claim
-  /*getClaimableBids().then(function (ret) {
-    console.log(ret);
-  });*/
+  /*
+    getClaimableBids().then(function (ret) {
+        console.log(ret);
+    });}
+    */
 
   // claimの処理は未確認なので後日追加
-
-  /*getTokenBalance(ATOM_DENOM).then(function (ret) {
+  /*
+  getTokenBalance(ATOM_DENOM).then(function (ret) {
     console.log(ret);
-  });*/
+  });
+  */
 })();
