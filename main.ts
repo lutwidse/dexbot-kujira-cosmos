@@ -8,13 +8,8 @@ function delay(ms: number) {
 
 const bot = botClientFactory();
 
-
-
 bot.then(function (b) {
-    (async () => {
-        b.getTokenBalance(ATOM_DENOM).then((r) => {
-            console.log(r)
-          });
+  (async () => {
     while (true) {
       // Bidの確認
       await b.getBids(false).then((r) => {
