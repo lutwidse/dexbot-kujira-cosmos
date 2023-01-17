@@ -16,108 +16,109 @@ import {
 const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
 
-(async () => {
-  class Bot {
-    signer: DirectSecp256k1HdWallet;
-    client: SigningStargateClient;
-    signerAddress: Promise<readonly AccountData[]>;
+export class Bot {
+  signer: DirectSecp256k1HdWallet;
+  client: SigningStargateClient;
+  signerAddress: string;
 
-    constructor(
-      signer: DirectSecp256k1HdWallet,
-      client: SigningStargateClient
-    ) {
-      this.signer = signer;
-      this.client = client;
-      this.signerAddress = this.signer.getAccounts();
-    }
+  constructor(
+    signer: DirectSecp256k1HdWallet,
+    client: SigningStargateClient,
+    signerAddress: string
+  ) {
+    this.signer = signer;
+    this.client = client;
+    this.signerAddress = signerAddress;
+  }
 
-    swapAtomToUsk(atom: number) {
-      client.signAndBroadcast(
-        signerAddress,
-        [
-          {
-            typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-            value: MsgExecuteContract.fromPartial({
-              sender: signerAddress,
-              contract: ATOM_USK_CONTRACT,
-              msg: toUtf8(JSON.stringify(msg_swap())),
-              funds: coins(atom * DENOM_AMOUNT, ATOM_DENOM)
-            })
-          }
-        ],
-        'auto'
-      );
-    }
-
-    submitBid(premium: number, bid_amount: number) {
-      client.signAndBroadcast(
-        signerAddress,
-        [
-          {
-            typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-            value: MsgExecuteContract.fromPartial({
-              sender: signerAddress,
-              contract: ORCA_MARKET_USK_ATOM_CONTRACT,
-              msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
-              funds: coins(bid_amount * DENOM_AMOUNT, KUJI_DENOM)
-            })
-          }
-        ],
-        'auto'
-      );
-    }
-
-    async getClaimableBids(): Promise<string[]> {
-      // 16進数でエンコード
-      const payload = `A${ORCA_MARKET_USK_ATOM_CONTRACT}h{"bids_by_user":{"bidder":"${signerAddress}","limit":31,"start_after":"0"}}`;
-      const data =
-        '0a' +
-        payload
-          .split('')
-          .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
-          .join('');
-
-      const response = await axios.post('https://rpc.kaiyo.kujira.setten.io', {
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'abci_query',
-        params: {
-          path: '/cosmwasm.wasm.v1.Query/SmartContractState',
-          data: data,
-          prove: false
+  swapAtomToUsk(atom: number) {
+    this.client.signAndBroadcast(
+      this.signerAddress,
+      [
+        {
+          typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          value: MsgExecuteContract.fromPartial({
+            sender: this.signerAddress,
+            contract: ATOM_USK_CONTRACT,
+            msg: toUtf8(JSON.stringify(msg_swap())),
+            funds: coins(atom * DENOM_AMOUNT, ATOM_DENOM)
+          })
         }
-      });
-      // 1文字目にゴミが降ってくるので削除
-      // base64でデコード
-      const bids =
-        '{' +
-        ConversionUtils.base64ToString(
-          response.data.result.response.value
-        ).slice(2);
-      const bids_json = JSON.parse(bids);
+      ],
+      'auto'
+    );
+  }
 
-      let claimable_idxs = [];
-      for (let i of bids_json.bids) {
-        if (parseInt(i['pending_liquidated_collateral']) > 0) {
-          claimable_idxs.push(i['idx']);
+  submitBid(premium: number, bid_amount: number) {
+    this.client.signAndBroadcast(
+      this.signerAddress,
+      [
+        {
+          typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          value: MsgExecuteContract.fromPartial({
+            sender: this.signerAddress,
+            contract: ORCA_MARKET_USK_ATOM_CONTRACT,
+            msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
+            funds: coins(bid_amount * DENOM_AMOUNT, KUJI_DENOM)
+          })
         }
+      ],
+      'auto'
+    );
+  }
+
+  async getClaimableBids(): Promise<string[]> {
+    // 16進数でエンコード
+    const payload = `A${ORCA_MARKET_USK_ATOM_CONTRACT}h{"bids_by_user":{"bidder":"${this.signerAddress}","limit":31,"start_after":"0"}}`;
+    const data =
+      '0a' +
+      payload
+        .split('')
+        .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('');
+
+    const response = await axios.post('https://rpc.kaiyo.kujira.setten.io', {
+      jsonrpc: '2.0',
+      id: 0,
+      method: 'abci_query',
+      params: {
+        path: '/cosmwasm.wasm.v1.Query/SmartContractState',
+        data: data,
+        prove: false
       }
-      return claimable_idxs;
-    }
-
-    async getTokenBalance(denom: string): Promise<string> {
-      const response = await axios.get(
-        `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${signerAddress}?pagination.limit=1000`,
-        {}
+    });
+    // 1文字目にゴミが降ってくるので削除
+    // base64でデコード
+    const bids =
+      '{' +
+      ConversionUtils.base64ToString(response.data.result.response.value).slice(
+        2
       );
-      for (let i of response.data.balances) {
-        if (i['denom'] == denom) {
-          return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
-        }
+    const bids_json = JSON.parse(bids);
+
+    let claimable_idxs = [];
+    for (let i of bids_json.bids) {
+      if (parseInt(i['pending_liquidated_collateral']) > 0) {
+        claimable_idxs.push(i['idx']);
+      }
+    }
+    return claimable_idxs;
+  }
+
+  async getTokenBalance(denom: string): Promise<string> {
+    const response = await axios.get(
+      `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
+      {}
+    );
+    for (let i of response.data.balances) {
+      if (i['denom'] == denom) {
+        return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
       }
     }
   }
+}
 
+export async function botClientFactory() {
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(MNEMONIC, {
     prefix: 'kujira'
   });
@@ -132,25 +133,5 @@ import { ConversionUtils } from 'turbocommons-ts';
     }
   );
 
-  let bot = new Bot(signer, client);
-
-  // FIN
-  //bot.swapAtomToUsk(0.001)
-
-  // ORCA
-  //bot.submitBid(1, 1)
-
-  /* 清算済み担保の確認
-  bot.getClaimableBids().then(function (ret) {
-    console.log(ret);
-  });
-  */
-
-  /* wallet残高の確認
-  bot.getTokenBalance(ATOM_DENOM).then(function (ret) {
-    console.log(ret);
-  });
-  */
-
-  // claimの処理は未確認なので後日追加
-})();
+  return new Bot(signer, client, signerAddress);
+}

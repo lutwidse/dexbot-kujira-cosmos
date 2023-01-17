@@ -29,7 +29,7 @@ export function msg_swap() {
   };
 }
 
-// Orca
+// ORCA
 export function msg_submit_bid(premium: number) {
   return {
     submit_bid: {
