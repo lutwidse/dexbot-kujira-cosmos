@@ -8,11 +8,16 @@ function delay(ms: number) {
 
 const bot = botClientFactory();
 
+
+
 bot.then(function (b) {
-  (async () => {
+    (async () => {
+        b.getTokenBalance(ATOM_DENOM).then((r) => {
+            console.log(r)
+          });
     while (true) {
       // Bidの確認
-      b.getBids(false).then((r) => {
+      await b.getBids(false).then((r) => {
         // Bidが既に存在するなら何もしない
         if (r.length > 0) {
           return;
@@ -26,14 +31,17 @@ bot.then(function (b) {
       });
 
       // 清算済みBidの確認
-      b.getBids(true).then((r) => {
-        // claimの処理は未確認なので後日追加
-        // ...
+      await b.getBids(true).then((r) => {
+        // Bidが存在するなら受取
+        if (r.length > 0) {
+          // claimの処理は未確認なので後日追加
+          // ...
 
-        // 清算したATOMをUSKにスワップ
-        b.getTokenBalance(ATOM_DENOM).then((r) => {
-          b.swapAtomToUsk(parseInt(r));
-        });
+          // 清算したATOMをUSKにスワップ
+          b.getTokenBalance(ATOM_DENOM).then((r) => {
+            b.swapAtomToUsk(parseInt(r));
+          });
+        }
       });
       await delay(60 * 1000);
     }
