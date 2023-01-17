@@ -107,7 +107,7 @@ import { ConversionUtils } from 'turbocommons-ts';
 
     async getTokenBalance(denom: string): Promise<string> {
       const response = await axios.get(
-        `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${signerAddress}'?pagination.limit=1000`,
+        `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${signerAddress}?pagination.limit=1000`,
         {}
       );
       for (let i of response.data.balances) {
