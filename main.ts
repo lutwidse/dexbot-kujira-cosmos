@@ -1,28 +1,41 @@
-import { ATOM_DENOM } from './config';
+import { ATOM_DENOM, USK_DENOM, PREMIUM } from './config';
 import './liquidation_bot';
 import { botClientFactory } from './liquidation_bot';
 
-let bot = botClientFactory();
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const bot = botClientFactory();
 
 bot.then(function (b) {
-  // FIN
-  b.swapAtomToUsk(0.001);
-  // ORCA
-  b.submitBid(1, 1);
+  (async () => {
+    while (true) {
+      // Bidの確認
+      b.getBids(false).then((r) => {
+        // Bidが既に存在するなら何もしない
+        if (r.length > 0) {
+          return;
+          // Bidが存在していないなら新たに発行
+        } else {
+          // USKの残高を取得してBid
+          b.getTokenBalance(USK_DENOM).then((r) => {
+            b.submitBid(PREMIUM, parseInt(r));
+          });
+        }
+      });
 
-  // 清算済み担保の確認
-  bot.then(function (b) {
-    b.getClaimableBids().then(function (r) {
-      console.log(r);
-    });
-  });
+      // 清算済みBidの確認
+      b.getBids(true).then((r) => {
+        // claimの処理は未確認なので後日追加
+        // ...
 
-  // 残高の確認
-  bot.then(function (b) {
-    b.getTokenBalance(ATOM_DENOM).then(function (r) {
-      console.log(r);
-    });
-  });
-
-  // claimの処理は未確認なので後日追加
+        // 清算したATOMをUSKにスワップ
+        b.getTokenBalance(ATOM_DENOM).then((r) => {
+          b.swapAtomToUsk(parseInt(r));
+        });
+      });
+      await delay(60 * 1000);
+    }
+  })();
 });

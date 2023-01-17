@@ -67,7 +67,7 @@ export class Bot {
     );
   }
 
-  async getClaimableBids(): Promise<string[]> {
+  async getBids(isClaimable: boolean): Promise<string[]> {
     // 16進数でエンコード
     const payload = `A${ORCA_MARKET_USK_ATOM_CONTRACT}h{"bids_by_user":{"bidder":"${this.signerAddress}","limit":31,"start_after":"0"}}`;
     const data =
@@ -96,13 +96,20 @@ export class Bot {
       );
     const bids_json = JSON.parse(bids);
 
-    let claimable_idxs = [];
-    for (let i of bids_json.bids) {
-      if (parseInt(i['pending_liquidated_collateral']) > 0) {
-        claimable_idxs.push(i['idx']);
+    let idxs = [];
+    if (isClaimable) {
+      for (let i of bids_json.bids) {
+        if (parseInt(i['pending_liquidated_collateral']) > 0) {
+          idxs.push(i['idx']);
+        }
       }
+      return idxs;
+    } else {
+      for (let i of bids_json.bids) {
+        idxs.push(i['idx']);
+      }
+      return idxs;
     }
-    return claimable_idxs;
   }
 
   async getTokenBalance(denom: string): Promise<string> {
