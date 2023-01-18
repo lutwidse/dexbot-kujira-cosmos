@@ -15,3 +15,6 @@ export const USK_DENOM =
   'factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk';
 
 export const PREMIUM = 7;
+
+export const BID_MAX = 3;
+export const BID_MIN_USK = 1;
