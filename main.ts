@@ -29,7 +29,7 @@ bot.then(function (b) {
         await b.claimLiquidations(bidsClaimable);
         // 清算したATOMをUSKにスワップ
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
-        b.swapAtomToUsk(parseFloat(atomBalance));
+        await b.swapAtomToUsk(parseFloat(atomBalance));
       }
 
       await delay(60 * 1000);
