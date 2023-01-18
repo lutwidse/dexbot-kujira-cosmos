@@ -191,9 +191,11 @@ export class Bot {
     );
     for (let i of response.data.balances) {
       if (i['denom'] == denom) {
-        return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
+        return new Decimal(i['amount']).div(DENOM_AMOUNT).toString();
       }
     }
+    // 残高が0の場合（Responseがないためnullと同義）
+    return '0';
   }
 }
 
