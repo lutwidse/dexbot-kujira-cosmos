@@ -62,15 +62,7 @@ export class Bot {
       ],
       'auto'
     );
-    this.logger.info(
-      `{
-        "0": {
-          "swap": {
-            "atom": ${atom},
-            "usk": ${parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT}
-          }
-        }
-      }`
+    this.logger.info(`{"swap": {"atom": ${atom},"usk": ${parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT}}}`
     );
   }
 
@@ -90,7 +82,7 @@ export class Bot {
       ],
       'auto'
     );
-    this.logger.info(`"bid":{"usk":${bid_amount}}`);
+    this.logger.info(`{"bid": {"usk": ${bid_amount}}}`);
   }
 
   claimLiquidations(idxs: string[]) {
