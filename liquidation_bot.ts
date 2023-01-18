@@ -3,7 +3,11 @@ import { GasPrice, SigningStargateClient, coins } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet, AccountData } from '@cosmjs/proto-signing';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 const { toUtf8 } = require('@cosmjs/encoding');
-import { msg_claim_liquidations, msg_submit_bid, msg_swap } from './kujira_wrapper';
+import {
+  msg_claim_liquidations,
+  msg_submit_bid,
+  msg_swap
+} from './kujira_wrapper';
 import {
   RPC_ENDPOINT,
   MNEMONIC,
@@ -41,8 +45,8 @@ export class Bot {
     });
   }
 
-  swapAtomToUsk(atom: number) {
-    this.client.signAndBroadcast(
+  async swapAtomToUsk(atom: number) {
+    const tx = await this.client.signAndBroadcast(
       this.signerAddress,
       [
         {
@@ -57,10 +61,15 @@ export class Bot {
       ],
       'auto'
     );
+    this.logger.info(
+      `[FIN] Swap ${atom} ATOM to ${
+        parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT
+      } USK`
+    );
   }
 
-  submitBid(premium: number, bid_amount: number) {
-    this.client.signAndBroadcast(
+  async submitBid(premium: number, bid_amount: number) {
+    await this.client.signAndBroadcast(
       this.signerAddress,
       [
         {
@@ -75,6 +84,9 @@ export class Bot {
       ],
       'auto'
     );
+    this.logger.info(
+      `[ORCA] Bid ${bid_amount} USK`
+    );
   }
 
   claimLiquidations(idxs: string[]) {
@@ -86,7 +98,7 @@ export class Bot {
           value: MsgExecuteContract.fromPartial({
             sender: this.signerAddress,
             contract: ORCA_MARKET_USK_ATOM_CONTRACT,
-            msg: toUtf8(JSON.stringify(msg_claim_liquidations(idxs))),
+            msg: toUtf8(JSON.stringify(msg_claim_liquidations(idxs)))
           })
         }
       ],
