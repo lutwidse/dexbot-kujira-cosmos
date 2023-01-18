@@ -3,6 +3,7 @@ import { GasPrice, SigningStargateClient, coins } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet, AccountData } from '@cosmjs/proto-signing';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 const { toUtf8 } = require('@cosmjs/encoding');
+import Decimal from 'decimal.js';
 import {
   msg_claim_liquidations,
   msg_submit_bid,
@@ -166,7 +167,8 @@ export class Bot {
     );
     for (let i of response.data.balances) {
       if (i['denom'] == denom) {
-        return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
+        const d = Decimal.set({ precision: 5, rounding: 4 });
+        return new d(parseInt(i['amount']) / DENOM_AMOUNT).toString();
       }
     }
   }
