@@ -22,6 +22,7 @@ const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
 import { Logger } from 'tslog';
 import { appendFileSync } from 'fs';
+import { ILogObj } from 'tslog/dist/types/interfaces';
 
 export class Bot {
   signer: DirectSecp256k1HdWallet;
@@ -37,13 +38,7 @@ export class Bot {
     this.signer = signer;
     this.client = client;
     this.signerAddress = signerAddress;
-    this.logger = new Logger({
-      prettyLogTemplate:
-        '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
-    });
-    this.logger.attachTransport((logObj) => {
-      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
-    });
+    this.logger = new Logger({});
   }
 
   async swapAtomToUsk(atom: number) {
@@ -56,14 +51,34 @@ export class Bot {
             sender: this.signerAddress,
             contract: ATOM_USK_CONTRACT,
             msg: toUtf8(JSON.stringify(msg_swap())),
-            funds: coins(atom * DENOM_AMOUNT, ATOM_DENOM)
+            funds: coins(
+              new Decimal(atom).mul(DENOM_AMOUNT).toFixed(),
+              ATOM_DENOM
+            )
           })
         }
       ],
       'auto'
     );
-    this.logger.info(`{"swap": {"atom": ${atom},"usk": ${parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT}}}`
+
+    const defaultLogObject = {
+      atom: `${atom}`,
+      usk: `${new Decimal(tx.events[14].attributes[3].value).div(
+        DENOM_AMOUNT
+      )}}`
+    };
+    this.logger = new Logger<ILogObj>(
+      {
+        type: 'json',
+        prettyLogTemplate:
+          '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
+      },
+      defaultLogObject
     );
+    this.logger.attachTransport((logObj) => {
+      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
+    });
+    this.logger.info('Swap');
   }
 
   async submitBid(premium: number, bid_amount: number) {
@@ -76,13 +91,30 @@ export class Bot {
             sender: this.signerAddress,
             contract: ORCA_MARKET_USK_ATOM_CONTRACT,
             msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
-            funds: coins(bid_amount * DENOM_AMOUNT, USK_DENOM)
+            funds: coins(
+              new Decimal(bid_amount).mul(DENOM_AMOUNT).toFixed(),
+              USK_DENOM
+            )
           })
         }
       ],
       'auto'
     );
-    this.logger.info(`{"bid": {"usk": ${bid_amount}}}`);
+    const defaultLogObject = {
+      usk: `${bid_amount}`
+    };
+    this.logger = new Logger<ILogObj>(
+      {
+        type: 'json',
+        prettyLogTemplate:
+          '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
+      },
+      defaultLogObject
+    );
+    this.logger.attachTransport((logObj) => {
+      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
+    });
+    this.logger.info('Bid');
   }
 
   claimLiquidations(idxs: string[]) {
@@ -159,8 +191,7 @@ export class Bot {
     );
     for (let i of response.data.balances) {
       if (i['denom'] == denom) {
-        const d = Decimal.set({ precision: 5, rounding: 3 });
-        return new d(parseInt(i['amount']) / DENOM_AMOUNT).toString();
+        return (parseInt(i['amount']) / DENOM_AMOUNT).toString();
       }
     }
   }
