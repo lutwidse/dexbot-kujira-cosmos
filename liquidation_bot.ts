@@ -15,7 +15,7 @@ import {
   ATOM_USK_CONTRACT,
   ATOM_DENOM,
   ORCA_MARKET_USK_ATOM_CONTRACT,
-  KUJI_DENOM
+  USK_DENOM
 } from './config';
 const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
@@ -62,9 +62,14 @@ export class Bot {
       'auto'
     );
     this.logger.info(
-      `[FIN] Swap ${atom} ATOM to ${
-        parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT
-      } USK`
+      `{
+        "0": {
+          "swap": {
+            "atom": ${atom},
+            "usk": ${parseInt(tx.events[14].attributes[3].value) / DENOM_AMOUNT}
+          }
+        }
+      }`
     );
   }
 
@@ -78,15 +83,13 @@ export class Bot {
             sender: this.signerAddress,
             contract: ORCA_MARKET_USK_ATOM_CONTRACT,
             msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
-            funds: coins(bid_amount * DENOM_AMOUNT, KUJI_DENOM)
+            funds: coins(bid_amount * DENOM_AMOUNT, USK_DENOM)
           })
         }
       ],
       'auto'
     );
-    this.logger.info(
-      `[ORCA] Bid ${bid_amount} USK`
-    );
+    this.logger.info(`"bid":{"usk":${bid_amount}}`);
   }
 
   claimLiquidations(idxs: string[]) {
