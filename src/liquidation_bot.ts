@@ -166,7 +166,10 @@ export class Bot {
     if (bids == '{{"bids":[]}') {
       return [];
     } else {
-      // 1文字目にゴミが降ってくるので削除
+      // 新規注文がActivatingの状態だと1文字目にゴミが降ってくるので削除
+      if (bids.charAt(0) == '{' && bids.charAt(1) == '{') {
+        bids.slice(1);
+      }
       const bids_json = JSON.parse(bids.slice(1));
 
       let idxs = [];
