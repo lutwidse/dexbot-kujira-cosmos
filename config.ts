@@ -10,8 +10,6 @@ export const ATOM_DENOM =
 
 export const ORCA_MARKET_USK_ATOM_CONTRACT =
   'kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfc';
-export const KUJI_DENOM =
-  'factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk';
 
 export const USK_DENOM =
   'factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk';
