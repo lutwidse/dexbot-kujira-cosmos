@@ -3,7 +3,7 @@ import { GasPrice, SigningStargateClient, coins } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet, AccountData } from '@cosmjs/proto-signing';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 const { toUtf8 } = require('@cosmjs/encoding');
-import { msg_submit_bid, msg_swap } from './kujira_wrapper';
+import { msg_claim_liquidations, msg_submit_bid, msg_swap } from './kujira_wrapper';
 import {
   RPC_ENDPOINT,
   MNEMONIC,
@@ -70,6 +70,23 @@ export class Bot {
             contract: ORCA_MARKET_USK_ATOM_CONTRACT,
             msg: toUtf8(JSON.stringify(msg_submit_bid(premium))),
             funds: coins(bid_amount * DENOM_AMOUNT, KUJI_DENOM)
+          })
+        }
+      ],
+      'auto'
+    );
+  }
+
+  claimLiquidations(idxs: string[]) {
+    this.client.signAndBroadcast(
+      this.signerAddress,
+      [
+        {
+          typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          value: MsgExecuteContract.fromPartial({
+            sender: this.signerAddress,
+            contract: ORCA_MARKET_USK_ATOM_CONTRACT,
+            msg: toUtf8(JSON.stringify(msg_claim_liquidations(idxs))),
           })
         }
       ],

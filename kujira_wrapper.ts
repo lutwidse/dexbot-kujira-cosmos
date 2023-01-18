@@ -38,3 +38,11 @@ export function msg_submit_bid(premium: number) {
     }
   };
 }
+
+export function msg_claim_liquidations(bids_idxs: string[]) {
+  return {
+    "claim_liquidations": {
+      "bids_idx": bids_idxs
+    }
+  }
+}

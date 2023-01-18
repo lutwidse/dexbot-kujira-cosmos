@@ -29,9 +29,8 @@ bot.then(function (b) {
       await b.getBids(true).then((r) => {
         // Bidが存在するなら受取
         if (r.length > 0) {
-          // claimの処理は未確認なので後日追加
-          // ...
-
+          // 清算した担保の受け取り
+          b.claimLiquidations(r);
           // 清算したATOMをUSKにスワップ
           b.getTokenBalance(ATOM_DENOM).then((r) => {
             b.swapAtomToUsk(parseInt(r));
