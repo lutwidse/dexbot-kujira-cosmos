@@ -15,11 +15,14 @@ import {
 } from './config';
 const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
+import { Logger } from 'tslog';
+import { appendFileSync } from 'fs';
 
 export class Bot {
   signer: DirectSecp256k1HdWallet;
   client: SigningStargateClient;
   signerAddress: string;
+  logger: Logger<any>;
 
   constructor(
     signer: DirectSecp256k1HdWallet,
@@ -29,6 +32,13 @@ export class Bot {
     this.signer = signer;
     this.client = client;
     this.signerAddress = signerAddress;
+    this.logger = new Logger({
+      prettyLogTemplate:
+        '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
+    });
+    this.logger.attachTransport((logObj) => {
+      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
+    });
   }
 
   swapAtomToUsk(atom: number) {
