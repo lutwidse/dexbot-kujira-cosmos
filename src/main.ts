@@ -7,10 +7,9 @@ function delay(ms: number) {
 }
 
 const bot = botClientFactory();
-
 bot.then(function (b) {
-  (async () => {
-    while (true) {
+  while (true) {
+    (async () => {
       // Bidの確認
       const bids = await b.getBids(false);
       if (bids.length > 0) {
@@ -33,6 +32,6 @@ bot.then(function (b) {
       }
 
       await delay(60 * 1000);
-    }
-  })();
+    })();
+  }
 });
