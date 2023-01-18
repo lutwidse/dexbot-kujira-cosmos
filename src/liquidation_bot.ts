@@ -165,22 +165,24 @@ export class Bot {
     // BidしていないとparseできないJSONが降ってくるので対策
     if (bids == '{{"bids":[]}') {
       return [];
-    }
-    const bids_json = JSON.parse(bids);
+    } else {
+      // 1文字目にゴミが降ってくるので削除
+      const bids_json = JSON.parse(bids.slice(1));
 
-    let idxs = [];
-    if (isClaimable) {
-      for (let i of bids_json.bids) {
-        if (parseInt(i['pending_liquidated_collateral']) > 0) {
+      let idxs = [];
+      if (isClaimable) {
+        for (let i of bids_json.bids) {
+          if (parseInt(i['pending_liquidated_collateral']) > 0) {
+            idxs.push(i['idx']);
+          }
+        }
+        return idxs;
+      } else {
+        for (let i of bids_json.bids) {
           idxs.push(i['idx']);
         }
+        return idxs;
       }
-      return idxs;
-    } else {
-      for (let i of bids_json.bids) {
-        idxs.push(i['idx']);
-      }
-      return idxs;
     }
   }
 
