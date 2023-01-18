@@ -167,7 +167,7 @@ export class Bot {
     );
     for (let i of response.data.balances) {
       if (i['denom'] == denom) {
-        const d = Decimal.set({ precision: 5, rounding: 4 });
+        const d = Decimal.set({ precision: 5, rounding: 3 });
         return new d(parseInt(i['amount']) / DENOM_AMOUNT).toString();
       }
     }
