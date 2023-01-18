@@ -1,4 +1,11 @@
-import { ATOM_DENOM, USK_DENOM, PREMIUM, BID_MAX, BID_MIN_USK } from './config';
+import {
+  ATOM_DENOM,
+  USK_DENOM,
+  PREMIUM,
+  BID_MAX,
+  BID_MIN_USK,
+  RATELIMIT_MS
+} from './config';
 import './liquidation_bot';
 import { botClientFactory } from './liquidation_bot';
 
@@ -31,7 +38,7 @@ bot.then(function (b) {
           await b.swapAtomToUsk(parseFloat(atomBalance));
         }
 
-        await delay(60 * 1000);
+        await delay(RATELIMIT_MS * 1000);
       }
     }
   })();
