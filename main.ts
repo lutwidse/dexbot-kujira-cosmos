@@ -20,7 +20,7 @@ bot.then(function (b) {
         } else {
           // USKの残高を取得してBid
           b.getTokenBalance(USK_DENOM).then((r) => {
-            b.submitBid(PREMIUM, parseInt(r));
+            b.submitBid(PREMIUM, parseFloat(r));
           });
         }
       });
@@ -33,7 +33,7 @@ bot.then(function (b) {
           b.claimLiquidations(r);
           // 清算したATOMをUSKにスワップ
           b.getTokenBalance(ATOM_DENOM).then((r) => {
-            b.swapAtomToUsk(parseInt(r));
+            b.swapAtomToUsk(parseFloat(r));
           });
         }
       });
