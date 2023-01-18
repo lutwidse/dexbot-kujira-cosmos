@@ -1,4 +1,4 @@
-import { ATOM_DENOM, USK_DENOM, PREMIUM } from './config';
+import { ATOM_DENOM, USK_DENOM, PREMIUM, BID_MAX, BID_MIN_USK } from './config';
 import './liquidation_bot';
 import { botClientFactory } from './liquidation_bot';
 
@@ -8,16 +8,20 @@ function delay(ms: number) {
 
 const bot = botClientFactory();
 bot.then(function (b) {
-  while (true) {
-    (async () => {
+  (async () => {
+    while (true) {
       // Bidの確認
       const bids = await b.getBids(false);
-      if (bids.length > 0) {
-        return;
+      if (bids.length > BID_MAX) {
+        break;
         // Bidが存在していないなら新たに発行
       } else {
         // USKの残高を取得してBid
         const uskBalance = await b.getTokenBalance(USK_DENOM);
+        // USKの残高がBID_MINより下回るなら拒否
+        if (parseFloat(uskBalance) <= BID_MIN_USK) {
+          break;
+        }
         await b.submitBid(PREMIUM, parseFloat(uskBalance));
       }
 
@@ -32,6 +36,6 @@ bot.then(function (b) {
       }
 
       await delay(60 * 1000);
-    })();
-  }
+    }
+  })();
 });
