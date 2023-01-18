@@ -8,8 +8,7 @@ export function msg_submit_order(
       amount: (parseInt(uusk_amount) * 1000000).toString(),
       price: collateral_liquidation_price.toString(),
       denom: {
-        native:
-          'factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk'
+        native: 'USK_DENOM'
       }
     }
   };
@@ -41,8 +40,8 @@ export function msg_submit_bid(premium: number) {
 
 export function msg_claim_liquidations(bids_idxs: string[]) {
   return {
-    "claim_liquidations": {
-      "bids_idx": bids_idxs
+    claim_liquidations: {
+      bids_idx: bids_idxs
     }
-  }
+  };
 }
