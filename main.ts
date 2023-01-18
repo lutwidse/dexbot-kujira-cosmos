@@ -12,31 +12,26 @@ bot.then(function (b) {
   (async () => {
     while (true) {
       // Bidの確認
-      await b.getBids(false).then((r) => {
-        // Bidが既に存在するなら何もしない
-        if (r.length > 0) {
-          return;
-          // Bidが存在していないなら新たに発行
-        } else {
-          // USKの残高を取得してBid
-          b.getTokenBalance(USK_DENOM).then((r) => {
-            b.submitBid(PREMIUM, parseFloat(r));
-          });
-        }
-      });
+      const bids = await b.getBids(false);
+      if (bids.length > 0) {
+        return;
+        // Bidが存在していないなら新たに発行
+      } else {
+        // USKの残高を取得してBid
+        const uskBalance = await b.getTokenBalance(USK_DENOM);
+        await b.submitBid(PREMIUM, parseFloat(uskBalance));
+      }
 
       // 清算済みBidの確認
-      await b.getBids(true).then((r) => {
-        // Bidが存在するなら受取
-        if (r.length > 0) {
-          // 清算した担保の受け取り
-          b.claimLiquidations(r);
-          // 清算したATOMをUSKにスワップ
-          b.getTokenBalance(ATOM_DENOM).then((r) => {
-            b.swapAtomToUsk(parseFloat(r));
-          });
-        }
-      });
+      const bidsClaimable = await b.getBids(true);
+      if (bidsClaimable.length > 0) {
+        // 清算した担保の受け取り
+        await b.claimLiquidations(bidsClaimable);
+        // 清算したATOMをUSKにスワップ
+        const atomBalance = await b.getTokenBalance(ATOM_DENOM);
+        b.swapAtomToUsk(parseFloat(atomBalance));
+      }
+
       await delay(60 * 1000);
     }
   })();
