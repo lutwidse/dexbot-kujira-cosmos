@@ -133,6 +133,11 @@ export class Bot {
       ConversionUtils.base64ToString(response.data.result.response.value).slice(
         2
       );
+
+    // BidしていないとparseできないJSONが降ってくるので対策
+    if (bids == '{{"bids":[]}') {
+      return [];
+    }
     const bids_json = JSON.parse(bids);
 
     let idxs = [];
