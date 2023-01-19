@@ -19,4 +19,4 @@ export const PREMIUM = 7;
 export const BID_MAX = 5;
 export const BID_MIN_USK = 1;
 
-export const RATELIMIT_SEC = 120;
+export const RATELIMIT_SEC = 60;
