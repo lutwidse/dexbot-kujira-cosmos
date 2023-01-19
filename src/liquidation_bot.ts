@@ -43,6 +43,13 @@ export class Bot {
     this.client = client;
     this.signerAddress = signerAddress;
     this.logger = new Logger({});
+
+    this.logger.attachTransport((logObj) => {
+      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
+    });
+    this.logger.settings.type = 'json';
+    this.logger.settings.prettyLogTemplate =
+      '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]';
   }
 
   async swapAtomToUsk(atom: number) {
@@ -65,22 +72,13 @@ export class Bot {
       'auto'
     );
 
-    const defaultLogObject = {
-      atom: `${atom}`,
-      usk: `${new Decimal(tx.events[14].attributes[3].value).div(
-        DENOM_AMOUNT
-      )}}`
-    };
-    this.logger = new Logger<ILogObj>(
-      {
-        type: 'json',
-        prettyLogTemplate:
-          '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
-      },
-      defaultLogObject
-    );
-    this.logger.attachTransport((logObj) => {
-      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
+    this.logger.info({
+      swap: {
+        atom: `${atom}`,
+        usk: `${new Decimal(tx.events[14].attributes[3].value).div(
+          DENOM_AMOUNT
+        )}}`
+      }
     });
     this.logger.info('Swap');
   }
@@ -104,21 +102,8 @@ export class Bot {
       ],
       'auto'
     );
-    const defaultLogObject = {
-      usk: `${bid_amount}`
-    };
-    this.logger = new Logger<ILogObj>(
-      {
-        type: 'json',
-        prettyLogTemplate:
-          '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]'
-      },
-      defaultLogObject
-    );
-    this.logger.attachTransport((logObj) => {
-      appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
-    });
-    this.logger.info('Bid');
+
+    this.logger.info({ bid: { usk: `${bid_amount}}` } });
   }
 
   async claimLiquidations(idxs: string[]) {
