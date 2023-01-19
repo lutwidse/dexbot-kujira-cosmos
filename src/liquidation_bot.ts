@@ -160,7 +160,7 @@ export class Bot {
     });
     // 1文字目にゴミが降ってくるので削除
     // base64でデコード
-    const bids =
+    let bids =
       '{' +
       ConversionUtils.base64ToString(response.data.result.response.value).slice(
         2
