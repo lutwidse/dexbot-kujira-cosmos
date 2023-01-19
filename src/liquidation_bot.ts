@@ -24,6 +24,10 @@ import { Logger } from 'tslog';
 import { appendFileSync } from 'fs';
 import { ILogObj } from 'tslog/dist/types/interfaces';
 
+import axiosRetry from 'axios-retry';
+
+axiosRetry(axios, { retries: 3 });
+
 export class Bot {
   signer: DirectSecp256k1HdWallet;
   client: SigningStargateClient;
