@@ -1,6 +1,6 @@
 import { registry } from 'kujira.js';
 import { GasPrice, SigningStargateClient, coins } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet, AccountData } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 const { toUtf8 } = require('@cosmjs/encoding');
 import Decimal from 'decimal.js';
@@ -121,8 +121,8 @@ export class Bot {
     this.logger.info('Bid');
   }
 
-  claimLiquidations(idxs: string[]) {
-    this.client.signAndBroadcast(
+  async claimLiquidations(idxs: string[]) {
+    const tx = await this.client.signAndBroadcast(
       this.signerAddress,
       [
         {
@@ -136,6 +136,8 @@ export class Bot {
       ],
       'auto'
     );
+    // TODO: ロギング追加
+    //console.log(tx);
   }
 
   async getBids(isClaimable: boolean): Promise<string[]> {
@@ -195,7 +197,6 @@ export class Bot {
       }
     }
   }
-
   async getTokenBalance(denom: string): Promise<string> {
     const response = await axios.get(
       `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
