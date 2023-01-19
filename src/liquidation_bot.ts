@@ -145,26 +145,20 @@ export class Bot {
         prove: false
       }
     });
-    // 1文字目にゴミが降ってくるので削除
     // base64でデコード
-    let bids =
-      '{' +
-      ConversionUtils.base64ToString(response.data.result.response.value).slice(
-        2
-      );
+    // 最初の2文字にゴミが降ってくるので削除
+    let bids = ConversionUtils.base64ToString(
+      response.data.result.response.value
+    ).slice(2);
+    if (bids.charAt(0) != '{') {
+      bids = `{${bids}`
+    }
 
     // BidしていないとparseできないJSONが降ってくるので対策
-    if (bids == '{{"bids":[]}') {
+    if (bids == '{"bids":[]}') {
       return [];
     } else {
-      // 新規注文がActivatingの状態だと1文字目にゴミが降ってくるので削除
-      if (bids.charAt(0) == '{' && bids.charAt(1) == '{') {
-        bids.slice(1);
-        // 新規注文がActivatedの状態だと1文字目に文字が足りないので追加
-      } else {
-        bids = '{' + bids;
-      }
-      const bids_json = JSON.parse(bids.slice(1));
+      const bids_json = JSON.parse(bids);
 
       let idxs = [];
       if (isClaimable) {
