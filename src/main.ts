@@ -1,7 +1,7 @@
 import {
   ATOM_DENOM,
   USK_DENOM,
-  BID_PREMIUM,
+  BID_PREMIUM_THRESHOLD,
   BID_MAX,
   BID_MIN_USK,
   RATELIMIT_SEC,
@@ -10,6 +10,7 @@ import {
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
+import Decimal from 'decimal.js';
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,11 +26,14 @@ bot.then(function (b) {
       if (bids.length < BID_MAX) {
         const uskBalance = await b.getTokenBalance(USK_DENOM);
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
-        // TODO: プライスインパクトの確認からBID_PREMIUMを自動設定
-        // TODO: 同じく入札を自動でキャンセルできるようにする
-        if (parseFloat(uskBalance) > BID_MIN_USK) {
-          await b.submitBid(BID_PREMIUM, parseFloat(uskBalance));
+        if (uskBalance > BID_MIN_USK) {
+          const premiumWithPriceImpact = await b.getPremiumWithPriceImpact(
+            BOW_ATOM_USK_CONTRACT,
+            uskBalance
+          );
+          await b.submitBid(premiumWithPriceImpact, uskBalance);
         }
+        // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
       }
 
       // 清算済み入札の確認
@@ -44,20 +48,17 @@ bot.then(function (b) {
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
         // プライスインパクトの確認
         const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
-        const priceImpact = await b.getAtomToAnyPriceImpact(
+        const priceImpact = await b.getPriceImpact(
           pairs[0],
           pairs[1],
-          parseFloat(atomBalance)
+          atomBalance,
+          'cosmos'
         );
         // プライスインパクトがBID_PREMIUMよりも高いならスワップを継続
         // TODO: 手数料の計算
-        if (priceImpact < BID_PREMIUM) {
+        if (priceImpact < BID_PREMIUM_THRESHOLD) {
           // 清算したATOMをUSKにスワップ
-          await b.swap(
-            parseFloat(atomBalance),
-            FIN_ATOM_USK_CONTRACT,
-            ATOM_DENOM
-          );
+          await b.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
         } else {
           // TODO: アラートの追加
         }
