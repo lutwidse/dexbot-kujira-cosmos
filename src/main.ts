@@ -53,7 +53,6 @@ bot.then(function (b) {
         // TODO: 手数料の計算
         if (priceImpact < BID_PREMIUM) {
           // 清算したATOMをUSKにスワップ
-          console.log(priceImpact);
           await b.swap(
             parseFloat(atomBalance),
             FIN_ATOM_USK_CONTRACT,
