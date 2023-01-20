@@ -4,7 +4,8 @@ import {
   PREMIUM,
   BID_MAX,
   BID_MIN_USK,
-  RATELIMIT_SEC
+  RATELIMIT_SEC,
+  FIN_ATOM_USK_CONTRACT
 } from './config';
 import './liquidation_bot';
 import { botClientFactory } from './liquidation_bot';
@@ -39,7 +40,11 @@ bot.then(function (b) {
         await b.claimLiquidations(bidsIdxs);
         // 清算したATOMをUSKにスワップ
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
-        await b.swapAtomToUsk(parseFloat(atomBalance));
+        await b.swap(
+          parseFloat(atomBalance),
+          FIN_ATOM_USK_CONTRACT,
+          ATOM_DENOM
+        );
       }
       await delay(RATELIMIT_SEC * 1000);
     }

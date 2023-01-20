@@ -13,7 +13,7 @@ import {
   RPC_ENDPOINT,
   MNEMONIC,
   DENOM_AMOUNT,
-  ATOM_USK_CONTRACT,
+  FIN_ATOM_USK_CONTRACT,
   ATOM_DENOM,
   ORCA_MARKET_USK_ATOM_CONTRACT,
   USK_DENOM
@@ -49,12 +49,14 @@ export class Bot {
       '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]';
 
     this.axiosClient = axios.create();
-    axiosRetry(this.axiosClient, { retryDelay: (retryCount) => {
-      return retryCount * 10000;
-    }});
+    axiosRetry(this.axiosClient, {
+      retryDelay: (retryCount) => {
+        return retryCount * 10000;
+      }
+    });
   }
 
-  async swapAtomToUsk(atom: number) {
+  async swap(atom: number, contract: string, denom: string) {
     const tx = await this.client.signAndBroadcast(
       this.signerAddress,
       [
@@ -62,12 +64,9 @@ export class Bot {
           typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
           value: MsgExecuteContract.fromPartial({
             sender: this.signerAddress,
-            contract: ATOM_USK_CONTRACT,
+            contract: contract,
             msg: toUtf8(JSON.stringify(msg_swap())),
-            funds: coins(
-              new Decimal(atom).mul(DENOM_AMOUNT).toFixed(),
-              ATOM_DENOM
-            )
+            funds: coins(new Decimal(atom).mul(DENOM_AMOUNT).toFixed(), denom)
           })
         }
       ],
