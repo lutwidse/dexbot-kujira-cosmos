@@ -16,7 +16,7 @@ import {
   DENOM_AMOUNT,
   ORCA_MARKET_USK_ATOM_CONTRACT,
   USK_DENOM,
-  LCD_ENDPOINT
+  BID_PREMIUM_THRESHOLD
 } from './config';
 const axios = require('axios');
 import { Logger } from 'tslog';
@@ -53,7 +53,7 @@ export class Bot {
     this.axiosClient = axios.create();
     axiosRetry(this.axiosClient, {
       retryDelay: (retryCount) => {
-        return retryCount * 10000;
+        return retryCount * 10 * 1000;
       }
     });
   }
@@ -146,9 +146,9 @@ export class Bot {
     return tx.bids;
   }
 
-  async getTokenBalance(denom: string): Promise<string> {
+  async getTokenBalance(denom: string): Promise<number> {
     const tx = await this.cosmwasmClient.getBalance(this.signerAddress, denom);
-    return new Decimal(tx.amount).div(DENOM_AMOUNT).toString();
+    return new Decimal(tx.amount).div(DENOM_AMOUNT).toNumber();
   }
 
   async getPairs(contract: string): Promise<number[]> {
@@ -168,8 +168,7 @@ export class Bot {
     return response.data.cosmos['usd'];
   }
 
-  // TODO: いつか可変にする
-  async getAtomToAnyPriceImpact(
+  async getPriceImpact(
     token_a: number,
     token_b: number,
     tokenBalance: number,
@@ -192,6 +191,24 @@ export class Bot {
       .mul(100);
     return priceImpact.toNumber();
   }
+
+  async getPremiumWithPriceImpact(
+    contract: string,
+    uskBalance: number
+  ): Promise<number> {
+    const pairs = await this.getPairs(contract);
+    const premiumWithPriceImpact = await new Decimal(
+      await this.getPriceImpact(
+        pairs[0],
+        pairs[1],
+        new Decimal(uskBalance)
+          .div(await this.getTokenPrice('cosmos'))
+          .toNumber(),
+        'cosmos'
+      )
+    );
+    premiumWithPriceImpact.plus(BID_PREMIUM_THRESHOLD);
+    return premiumWithPriceImpact.toNumber();
   }
 }
 
