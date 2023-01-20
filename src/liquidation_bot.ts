@@ -41,7 +41,6 @@ export class Bot {
     this.client = client;
     this.signerAddress = signerAddress;
     this.logger = new Logger({});
-
     this.logger.attachTransport((logObj) => {
       appendFileSync('logs.txt', JSON.stringify(logObj) + '\n');
     });
@@ -81,7 +80,6 @@ export class Bot {
         )}}`
       }
     });
-    this.logger.info('Swap');
   }
 
   async submitBid(premium: number, bid_amount: number) {
@@ -122,8 +120,13 @@ export class Bot {
       ],
       'auto'
     );
-    // TODO: ロギング追加
-    //console.log(tx);
+    this.logger.info({
+      claim: {
+        atom: `${new Decimal(tx.events[10].attributes[2].value).div(
+          DENOM_AMOUNT
+        )}}`
+      }
+    });
   }
 
   async getBids(): Promise<string[]> {
