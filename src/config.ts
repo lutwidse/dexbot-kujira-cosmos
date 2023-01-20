@@ -1,5 +1,5 @@
 export const RPC_ENDPOINT = 'https://rpc.kaiyo.kujira.setten.io';
-export const MNEMONIC = '...';
+export const LCD_ENDPOINT = 'https://lcd.kaiyo.kujira.setten.io';
 
 export const DENOM_AMOUNT = 1000000;
 
@@ -13,6 +13,10 @@ export const FIN_ATOM_axlUSDC_CONTRACT =
 // ORCA Contract
 export const ORCA_MARKET_USK_ATOM_CONTRACT =
   'kujira1q8y46xg993cqg3xjycyw2334tepey7dmnh5jk2psutrz3fc69teskctgfc';
+
+// Bow Contract
+export const BOW_ATOM_USK_CONTRACT =
+  'kujira1yncutssgh2vj9scaymtteg949hwcft07c6qmgarxnaf04yesq3jsn6g2uv';
 
 // Kujira Denom
 export const USK_DENOM =

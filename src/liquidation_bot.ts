@@ -17,10 +17,10 @@ import {
   FIN_ATOM_USK_CONTRACT,
   ATOM_DENOM,
   ORCA_MARKET_USK_ATOM_CONTRACT,
-  USK_DENOM
+  USK_DENOM,
+  LCD_ENDPOINT
 } from './config';
 const axios = require('axios');
-import { ConversionUtils } from 'turbocommons-ts';
 import { Logger } from 'tslog';
 import { appendFileSync } from 'fs';
 
@@ -159,7 +159,7 @@ export class Bot {
   }
   async getTokenBalance(denom: string): Promise<string> {
     const response = await this.axiosClient.get(
-      `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
+      `${LCD_ENDPOINT}/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
       {}
     );
     for (let i of response.data.balances) {
