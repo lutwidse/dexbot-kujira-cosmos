@@ -22,17 +22,15 @@ const axios = require('axios');
 import { ConversionUtils } from 'turbocommons-ts';
 import { Logger } from 'tslog';
 import { appendFileSync } from 'fs';
-import { ILogObj } from 'tslog/dist/types/interfaces';
 
 import axiosRetry from 'axios-retry';
-
-axiosRetry(axios, { retries: 3 });
 
 export class Bot {
   signer: DirectSecp256k1HdWallet;
   client: SigningStargateClient;
   signerAddress: string;
   logger: Logger<any>;
+  axiosClient: any;
 
   constructor(
     signer: DirectSecp256k1HdWallet,
@@ -50,6 +48,9 @@ export class Bot {
     this.logger.settings.type = 'json';
     this.logger.settings.prettyLogTemplate =
       '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]';
+
+    this.axiosClient = axios.create();
+    axiosRetry(this.axiosClient, { retries: 3 });
   }
 
   async swapAtomToUsk(atom: number) {
@@ -135,23 +136,26 @@ export class Bot {
         .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
         .join('');
 
-    const response = await axios.post('https://rpc.kaiyo.kujira.setten.io', {
-      jsonrpc: '2.0',
-      id: 0,
-      method: 'abci_query',
-      params: {
-        path: '/cosmwasm.wasm.v1.Query/SmartContractState',
-        data: data,
-        prove: false
+    const response = await this.axiosClient.post(
+      'https://rpc.kaiyo.kujira.setten.io',
+      {
+        jsonrpc: '2.0',
+        id: 0,
+        method: 'abci_query',
+        params: {
+          path: '/cosmwasm.wasm.v1.Query/SmartContractState',
+          data: data,
+          prove: false
+        }
       }
-    });
+    );
     // base64でデコード
     // 最初の2文字にゴミが降ってくるので削除
     let bids = ConversionUtils.base64ToString(
       response.data.result.response.value
     ).slice(2);
     if (bids.charAt(0) != '{') {
-      bids = `{${bids}`
+      bids = `{${bids}`;
     }
 
     // BidしていないとparseできないJSONが降ってくるので対策
@@ -160,11 +164,11 @@ export class Bot {
     } else {
       const bids_json = JSON.parse(bids);
 
-      return bids_json.bids
+      return bids_json.bids;
     }
   }
   async getTokenBalance(denom: string): Promise<string> {
-    const response = await axios.get(
+    const response = await this.axiosClient.get(
       `https://lcd.kaiyo.kujira.setten.io/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
       {}
     );
