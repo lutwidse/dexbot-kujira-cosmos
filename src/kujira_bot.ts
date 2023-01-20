@@ -172,18 +172,26 @@ export class Bot {
   async getAtomToAnyPriceImpact(
     token_a: number,
     token_b: number,
-    tokenBalance: number
+    tokenBalance: number,
+    tokenName: string
   ): Promise<number> {
+    // https://dailydefi.org/articles/price-impact-and-how-to-calculate/
+    // https://ethereum.stackexchange.com/questions/102063/understand-price-impact-and-liquidity-in-pancakeswap
+    // TODO: スリッページの計算
     const constantProduct = new Decimal(token_a).mul(token_b);
-    const token_a_swapped = new Decimal(token_a).plus(
-      new Decimal(tokenBalance).mul(await this.getTokenPrice('cosmos'))
+    const amountIn = new Decimal(tokenBalance).mul(
+      await this.getTokenPrice(tokenName)
     );
+    const token_a_swapped = new Decimal(token_a).plus(amountIn);
     const token_b_swapped = new Decimal(constantProduct).div(token_a_swapped);
-    return new Decimal(token_b_swapped)
-      .minus(token_b)
-      .div(token_b)
-      .mul(100)
-      .toNumber();
+    const amountOut = new Decimal(token_b).minus(token_b_swapped);
+    const marketPrice = new Decimal(amountIn).div(amountOut);
+    const midPrice = new Decimal(token_a).div(token_b);
+    const priceImpact = new Decimal(1)
+      .minus(new Decimal(midPrice).div(marketPrice))
+      .mul(100);
+    return priceImpact.toNumber();
+  }
   }
 }
 
