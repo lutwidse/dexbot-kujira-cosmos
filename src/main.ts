@@ -26,7 +26,7 @@ bot.then(function (b) {
         const uskBalance = await b.getTokenBalance(USK_DENOM);
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
         if (parseFloat(uskBalance) > BID_MIN_USK) {
-          await b.submitBid(PREMIUM, parseFloat(uskBalance));
+          await b.submitBid(BID_PREMIUM, parseFloat(uskBalance));
         }
       }
 
