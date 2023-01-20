@@ -206,8 +206,9 @@ export class Bot {
           .toNumber(),
         'cosmos'
       )
-    );
-    premiumWithPriceImpact.plus(BID_PREMIUM_THRESHOLD);
+    )
+      .plus(BID_PREMIUM_THRESHOLD)
+      .round();
     return premiumWithPriceImpact.toNumber();
   }
 }
