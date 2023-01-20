@@ -1,5 +1,6 @@
 export const RPC_ENDPOINT = 'https://rpc.kaiyo.kujira.setten.io';
 export const LCD_ENDPOINT = 'https://lcd.kaiyo.kujira.setten.io';
+export const MNEMONIC = '...';
 
 export const DENOM_AMOUNT = 1000000;
 
