@@ -1,5 +1,6 @@
 import { registry } from 'kujira.js';
 import { GasPrice, SigningStargateClient, coins } from '@cosmjs/stargate';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 const { toUtf8 } = require('@cosmjs/encoding');
@@ -28,6 +29,7 @@ import axiosRetry from 'axios-retry';
 export class Bot {
   signer: DirectSecp256k1HdWallet;
   client: SigningStargateClient;
+  cosmwasmClient: CosmWasmClient;
   signerAddress: string;
   logger: Logger<any>;
   axiosClient: any;
@@ -35,10 +37,12 @@ export class Bot {
   constructor(
     signer: DirectSecp256k1HdWallet,
     client: SigningStargateClient,
+    cosmwasmClient: CosmWasmClient,
     signerAddress: string
   ) {
     this.signer = signer;
     this.client = client;
+    this.cosmwasmClient = cosmwasmClient;
     this.signerAddress = signerAddress;
     this.logger = new Logger({});
     this.logger.attachTransport((logObj) => {
@@ -131,36 +135,18 @@ export class Bot {
   }
 
   async getBids(): Promise<string[]> {
-    // 16進数でエンコード
-    const payload = `A${ORCA_MARKET_USK_ATOM_CONTRACT}h{"bids_by_user":{"bidder":"${this.signerAddress}","limit":31,"start_after":"0"}}`;
-    const data =
-      '0a' +
-      payload
-        .split('')
-        .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
-        .join('');
-
-    const response = await this.axiosClient.post(
-      'https://rpc.kaiyo.kujira.setten.io',
+    const tx = await this.cosmwasmClient.queryContractSmart(
+      ORCA_MARKET_USK_ATOM_CONTRACT,
       {
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'abci_query',
-        params: {
-          path: '/cosmwasm.wasm.v1.Query/SmartContractState',
-          data: data,
-          prove: false
+        bids_by_user: {
+          bidder: `${this.signerAddress}`,
+          limit: 31,
+          start_after: '0'
         }
       }
     );
-    // base64でデコード
-    // 最初の2文字にゴミが降ってくるので削除
-    let bids = ConversionUtils.base64ToString(
-      response.data.result.response.value
-    ).slice(2);
-    if (bids.charAt(0) != '{') {
-      bids = `{${bids}`;
-    }
+    return tx.bids
+  }
 
     // BidしていないとparseできないJSONが降ってくるので対策
     if (bids == '{"bids":[]}') {
@@ -201,5 +187,7 @@ export async function botClientFactory() {
     }
   );
 
-  return new Bot(signer, client, signerAddress);
+  const cosmwasmClient = await CosmWasmClient.connect(RPC_ENDPOINT);
+
+  return new Bot(signer, client, cosmwasmClient, signerAddress);
 }
