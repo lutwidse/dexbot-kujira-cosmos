@@ -147,17 +147,8 @@ export class Bot {
   }
 
   async getTokenBalance(denom: string): Promise<string> {
-    const response = await this.axiosClient.get(
-      `${LCD_ENDPOINT}/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
-      {}
-    );
-    for (let i of response.data.balances) {
-      if (i['denom'] == denom) {
-        return new Decimal(i['amount']).div(DENOM_AMOUNT).toString();
-      }
-    }
-    // 残高が0の場合（Responseがないためnullと同義）
-    return '0';
+    const tx = await this.cosmwasmClient.getBalance(this.signerAddress, denom);
+    return new Decimal(tx.amount).div(DENOM_AMOUNT).toString();
   }
 
   async getPairs(contract: string): Promise<number[]> {
