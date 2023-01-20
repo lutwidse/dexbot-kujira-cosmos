@@ -8,8 +8,8 @@ import {
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT
 } from './config';
-import './liquidation_bot';
-import { botClientFactory } from './liquidation_bot';
+import './kujira_bot';
+import { botClientFactory } from './kujira_bot';
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

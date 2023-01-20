@@ -9,7 +9,7 @@ import {
   msg_claim_liquidations,
   msg_submit_bid,
   msg_swap
-} from './kujira_wrapper';
+} from './msg_wrapper';
 import {
   RPC_ENDPOINT,
   MNEMONIC,
