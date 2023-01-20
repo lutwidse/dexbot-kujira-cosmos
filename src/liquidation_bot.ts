@@ -49,7 +49,9 @@ export class Bot {
       '{{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}\t{{logLevelName}}\t[{{filePathWithLine}}\t{{name}}]';
 
     this.axiosClient = axios.create();
-    axiosRetry(this.axiosClient, { retries: 3 });
+    axiosRetry(this.axiosClient, { retryDelay: (retryCount) => {
+      return retryCount * 10000;
+    }});
   }
 
   async swapAtomToUsk(atom: number) {
