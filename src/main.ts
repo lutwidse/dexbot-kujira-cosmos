@@ -38,11 +38,15 @@ bot.then(function (b) {
 
       // 清算済み入札の確認
       let bidsIdxs = [];
+      let premiumAvg = 0;
       for (let i of bids) {
         if (parseFloat(i['pending_liquidated_collateral']) > 0) {
           bidsIdxs.push(i['idx']);
+          premiumAvg += parseInt(i['premium']);
         }
       }
+      premiumAvg = premiumAvg / bids.length;
+
       if (bidsIdxs.length > 0) {
         await b.claimLiquidations(bidsIdxs);
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
@@ -54,9 +58,7 @@ bot.then(function (b) {
           atomBalance,
           'cosmos'
         );
-        // プライスインパクトがBID_PREMIUMよりも高いならスワップを継続
-        // TODO: 手数料の計算
-        if (priceImpact < BID_PREMIUM_THRESHOLD) {
+        if (priceImpact < premiumAvg) {
           // 清算したATOMをUSKにスワップ
           await b.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
         } else {

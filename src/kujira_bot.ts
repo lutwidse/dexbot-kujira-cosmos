@@ -177,6 +177,7 @@ export class Bot {
     // https://dailydefi.org/articles/price-impact-and-how-to-calculate/
     // https://ethereum.stackexchange.com/questions/102063/understand-price-impact-and-liquidity-in-pancakeswap
     // TODO: スリッページの計算
+    // TODO: 手数料の計算
     const constantProduct = new Decimal(token_a).mul(token_b);
     const amountIn = new Decimal(tokenBalance).mul(
       await this.getTokenPrice(tokenName)
