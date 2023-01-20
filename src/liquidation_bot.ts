@@ -14,8 +14,6 @@ import {
   RPC_ENDPOINT,
   MNEMONIC,
   DENOM_AMOUNT,
-  FIN_ATOM_USK_CONTRACT,
-  ATOM_DENOM,
   ORCA_MARKET_USK_ATOM_CONTRACT,
   USK_DENOM,
   LCD_ENDPOINT
@@ -145,18 +143,9 @@ export class Bot {
         }
       }
     );
-    return tx.bids
+    return tx.bids;
   }
 
-    // BidしていないとparseできないJSONが降ってくるので対策
-    if (bids == '{"bids":[]}') {
-      return [];
-    } else {
-      const bids_json = JSON.parse(bids);
-
-      return bids_json.bids;
-    }
-  }
   async getTokenBalance(denom: string): Promise<string> {
     const response = await this.axiosClient.get(
       `${LCD_ENDPOINT}/cosmos/bank/v1beta1/balances/${this.signerAddress}?pagination.limit=1000`,
@@ -170,9 +159,44 @@ export class Bot {
     // 残高が0の場合（Responseがないためnullと同義）
     return '0';
   }
+
+  async getPairs(contract: string): Promise<number[]> {
+    const pairs = await this.client.getAllBalances(contract);
+    return [
+      new Decimal(pairs[0].amount).div(DENOM_AMOUNT).toNumber(),
+      new Decimal(pairs[1].amount).div(DENOM_AMOUNT).toNumber()
+    ];
+  }
+
+  async getTokenPrice(tokenName: string): Promise<number> {
+    const response = await this.axiosClient.get(
+      // a,b,c...
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenName}&vs_currencies=usd`,
+      {}
+    );
+    return response.data.cosmos['usd'];
+  }
+
+  // TODO: いつか可変にする
+  async getAtomToAnyPriceImpact(
+    token_a: number,
+    token_b: number,
+    tokenBalance: number
+  ): Promise<number> {
+    const constantProduct = new Decimal(token_a).mul(token_b);
+    const token_a_swapped = new Decimal(token_a).plus(
+      new Decimal(tokenBalance).mul(await this.getTokenPrice('cosmos'))
+    );
+    const token_b_swapped = new Decimal(constantProduct).div(token_a_swapped);
+    return new Decimal(token_b_swapped)
+      .minus(token_b)
+      .div(token_b)
+      .mul(100)
+      .toNumber();
+  }
 }
 
-export async function botClientFactory() {
+export async function botClientFactory(): Promise<Bot> {
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(MNEMONIC, {
     prefix: 'kujira'
   });

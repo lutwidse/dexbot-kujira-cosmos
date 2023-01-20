@@ -25,8 +25,8 @@ export const USK_DENOM =
 export const ATOM_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-// SETTING
-export const PREMIUM = 7;
+// Bot Setting
+export const BID_PREMIUM = 7;
 
 export const BID_MAX = 5;
 export const BID_MIN_USK = 1;

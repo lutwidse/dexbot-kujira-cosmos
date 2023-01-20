@@ -1,11 +1,12 @@
 import {
   ATOM_DENOM,
   USK_DENOM,
-  PREMIUM,
+  BID_PREMIUM,
   BID_MAX,
   BID_MIN_USK,
   RATELIMIT_SEC,
-  FIN_ATOM_USK_CONTRACT
+  FIN_ATOM_USK_CONTRACT,
+  BOW_ATOM_USK_CONTRACT
 } from './config';
 import './liquidation_bot';
 import { botClientFactory } from './liquidation_bot';
@@ -38,13 +39,25 @@ bot.then(function (b) {
       }
       if (bidsIdxs.length > 0) {
         await b.claimLiquidations(bidsIdxs);
-        // 清算したATOMをUSKにスワップ
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
-        await b.swap(
-          parseFloat(atomBalance),
-          FIN_ATOM_USK_CONTRACT,
-          ATOM_DENOM
+        // プライスインパクトの確認
+        const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
+        const priceImpact = await b.getAtomToAnyPriceImpact(
+          pairs[0],
+          pairs[1],
+          parseFloat(atomBalance)
         );
+        // プライスインパクトがBID_PREMIUMよりも高いならスワップを継続
+        // TODO: アラートの追加
+        if (priceImpact < BID_PREMIUM) {
+          // 清算したATOMをUSKにスワップ
+          console.log(priceImpact);
+          await b.swap(
+            parseFloat(atomBalance),
+            FIN_ATOM_USK_CONTRACT,
+            ATOM_DENOM
+          );
+        }
       }
       await delay(RATELIMIT_SEC * 1000);
     }
