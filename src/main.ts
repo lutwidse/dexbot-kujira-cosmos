@@ -25,6 +25,8 @@ bot.then(function (b) {
       if (bids.length < BID_MAX) {
         const uskBalance = await b.getTokenBalance(USK_DENOM);
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
+        // TODO: プライスインパクトの確認からBID_PREMIUMを自動設定
+        // TODO: 同じく入札を自動でキャンセルできるようにする
         if (parseFloat(uskBalance) > BID_MIN_USK) {
           await b.submitBid(BID_PREMIUM, parseFloat(uskBalance));
         }
@@ -48,7 +50,7 @@ bot.then(function (b) {
           parseFloat(atomBalance)
         );
         // プライスインパクトがBID_PREMIUMよりも高いならスワップを継続
-        // TODO: アラートの追加
+        // TODO: 手数料の計算
         if (priceImpact < BID_PREMIUM) {
           // 清算したATOMをUSKにスワップ
           console.log(priceImpact);
@@ -57,6 +59,8 @@ bot.then(function (b) {
             FIN_ATOM_USK_CONTRACT,
             ATOM_DENOM
           );
+        } else {
+          // TODO: アラートの追加
         }
       }
       await delay(RATELIMIT_SEC * 1000);
