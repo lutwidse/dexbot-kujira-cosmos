@@ -1,7 +1,6 @@
 import {
   ATOM_DENOM,
   USK_DENOM,
-  BID_PREMIUM_THRESHOLD,
   BID_MAX,
   BID_MIN_USK,
   RATELIMIT_SEC,
@@ -10,8 +9,6 @@ import {
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
-import Decimal from 'decimal.js';
-
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -31,6 +28,7 @@ bot.then(function (b) {
             BOW_ATOM_USK_CONTRACT,
             uskBalance
           );
+          // TODO: 他の清算者から入札の設定を取得して、PremiumとAmountを推定後にpremiumWithPriceImpactを調整する
           await b.submitBid(premiumWithPriceImpact, uskBalance);
         }
         // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
