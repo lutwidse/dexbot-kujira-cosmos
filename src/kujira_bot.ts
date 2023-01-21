@@ -198,7 +198,7 @@ export class Bot {
     uskBalance: number
   ): Promise<number> {
     const pairs = await this.getPairs(contract);
-    const premiumWithPriceImpact = await new Decimal(
+    const priceImpact = new Decimal(
       await this.getPriceImpact(
         pairs[0],
         pairs[1],
@@ -207,10 +207,21 @@ export class Bot {
           .toNumber(),
         'cosmos'
       )
-    )
+    );
+    let premiumWithPriceImpact = await new Decimal(priceImpact)
       .plus(BID_PREMIUM_THRESHOLD)
-      .round();
-    return premiumWithPriceImpact.toNumber();
+      .round()
+      .toNumber();
+
+    // 大量の清算が発生した場合にpremiumWithPriceImpactが30を超える可能性があるので確認
+    if (premiumWithPriceImpact > 30) {
+      if (priceImpact.toNumber() <= 30 - BID_PREMIUM_THRESHOLD) {
+        premiumWithPriceImpact = 30;
+      } else {
+        premiumWithPriceImpact = 0;
+      }
+    }
+    return premiumWithPriceImpact;
   }
 }
 

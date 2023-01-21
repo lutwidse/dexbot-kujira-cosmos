@@ -28,10 +28,13 @@ bot.then(function (b) {
             BOW_ATOM_USK_CONTRACT,
             uskBalance
           );
-          // TODO: 他の清算者から入札の設定を取得して、PremiumとAmountを推定後にpremiumWithPriceImpactを調整する
-          await b.submitBid(premiumWithPriceImpact, uskBalance);
+          // premiumWithPriceImpactの確認・詳しくはgetPremiumWithPriceImpactを参照
+          if (premiumWithPriceImpact != 0) {
+            // TODO: 他の清算者から入札の設定を取得して、PremiumとAmountを推定後にpremiumWithPriceImpactを調整する
+            await b.submitBid(premiumWithPriceImpact, uskBalance);
+          }
+          // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
         }
-        // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
       }
 
       // 清算済み入札の確認
