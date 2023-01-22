@@ -175,7 +175,8 @@ export class Bot {
 
   async getTokenBalance(denom: string): Promise<number> {
     const tx = await this.cosmwasmClient.getBalance(this.signerAddress, denom);
-    return new Decimal(tx.amount).div(DENOM_AMOUNT).floor().toNumber();
+    const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 })
+    return new RoundDecimal(tx.amount).div(DENOM_AMOUNT).toNumber();
   }
 
   async getPairs(contract: string): Promise<number[]> {
