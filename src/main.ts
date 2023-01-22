@@ -6,7 +6,8 @@ import {
   RATELIMIT_SEC,
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
-  DENOM_AMOUNT
+  DENOM_AMOUNT,
+  RATELIMIT_INSIDE_SEC
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
@@ -46,6 +47,7 @@ bot.then(function (b) {
           }
         }
       }
+      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       for (let i of bids) {
         const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
@@ -63,24 +65,26 @@ bot.then(function (b) {
           bids.splice(bids.indexOf(i, 0));
         }
       }
+      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       // 清算済み入札の確認
-      let bidsIdxs = [];
+      let bidsClaimableIdxs = [];
       let premiumAvg = 0;
       // 入札の平均プレミアム確認
-      console.log('[GET] bidsIdxs & premiumAvg');
+      console.log('[GET] bidsClaimableIdxs & premiumAvg');
       for (let i of bids) {
         if (parseFloat(i['pending_liquidated_collateral']) > 0) {
-          bidsIdxs.push(i['idx']);
+          bidsClaimableIdxs.push(i['idx']);
           premiumAvg += parseInt(i['premium']);
         }
       }
+      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       // TODO: 清算毎に個別に処理したほうがいいかもしれないので検討
       // 清算済み入札の受け取り
-      console.log('[CHECK] bidsIdxs length > 0');
-      if (bidsIdxs.length > 0) {
-        await b.claimLiquidations(bidsIdxs);
+      console.log('[CHECK] bidsClaimableIdxs length > 0');
+      if (bidsClaimableIdxs.length > 0) {
+        await b.claimLiquidations(bidsClaimableIdxs);
         console.log('[GET] atomBalance');
         const atomBalance = await b.getTokenBalance(ATOM_DENOM);
         // プライスインパクトの確認

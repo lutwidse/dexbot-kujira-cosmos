@@ -32,3 +32,4 @@ export const BID_MAX = 5;
 export const BID_MIN_USK = 1;
 
 export const RATELIMIT_SEC = 60;
+export const RATELIMIT_INSIDE_SEC = 5;
