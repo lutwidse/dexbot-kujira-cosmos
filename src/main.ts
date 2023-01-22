@@ -21,7 +21,9 @@ bot.then(function (b) {
       const bids = await b.getBids();
       // 入札の注文数が最大に達していないなら新規入札を発行
       if (bids.length < BID_MAX) {
-        const uskBalance = await b.getTokenBalance(USK_DENOM);
+        const uskBalance = new Decimal(await b.getTokenBalance(USK_DENOM))
+          .minus(0.1)
+          .toNumber();
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
         if (uskBalance > BID_MIN_USK) {
           const premiumWithPriceImpact = await b.getPremiumWithPriceImpact(
