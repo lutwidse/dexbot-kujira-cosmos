@@ -107,7 +107,11 @@ export class Bot {
     );
 
     await this.logger.info({
-      bid: { usk: `${tx.events[13].attributes[3].value}}` }
+      bid: {
+        usk: `${new Decimal(tx.events[13].attributes[3].value).div(
+          DENOM_AMOUNT
+        )}}`
+      }
     });
   }
 
@@ -175,7 +179,7 @@ export class Bot {
 
   async getTokenBalance(denom: string): Promise<number> {
     const tx = await this.cosmwasmClient.getBalance(this.signerAddress, denom);
-    const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 })
+    const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
     return new RoundDecimal(tx.amount).div(DENOM_AMOUNT).toNumber();
   }
 
