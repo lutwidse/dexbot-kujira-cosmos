@@ -28,9 +28,7 @@ bot.then(function (b) {
       console.log('[CHECK] bids length < BID_MAX');
       if (bids.length < BID_MAX) {
         console.log('[GET] uskBalance');
-        const uskBalance = new Decimal(await b.getTokenBalance(USK_DENOM))
-          .minus(0.1)
-          .toNumber();
+        const uskBalance = await b.getTokenBalance(USK_DENOM);
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
         console.log('[CHECK] uskBalance > BID_MIN_USK');
         if (uskBalance > BID_MIN_USK) {
@@ -55,7 +53,7 @@ bot.then(function (b) {
         const priceImpact = await b.getPriceImpact(
           pairs[0],
           pairs[1],
-          new Decimal(i['amount']).div(DENOM_AMOUNT).toNumber(),
+          new Decimal(i['amount']).div(DENOM_AMOUNT).floor().toNumber(),
           'cosmos'
         );
         // 入札のプレミアムよりpriceImpactが大きい場合は入札をキャンセル

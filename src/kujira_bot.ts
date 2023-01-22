@@ -87,7 +87,7 @@ export class Bot {
   }
 
   async submitBid(premium: number, bid_amount: number) {
-    await this.client.signAndBroadcast(
+    const tx = await this.client.signAndBroadcast(
       this.signerAddress,
       [
         {
@@ -106,7 +106,9 @@ export class Bot {
       'auto'
     );
 
-    this.logger.info({ bid: { usk: `${bid_amount}}` } });
+    await this.logger.info({
+      bid: { usk: `${tx.events[13].attributes[3].value}}` }
+    });
   }
 
   async retractBid(idx: string) {
@@ -124,7 +126,7 @@ export class Bot {
       ],
       'auto'
     );
-    this.logger.info({
+    await this.logger.info({
       retract: {
         usk: `${new Decimal(tx.events[10].attributes[3].value).div(
           DENOM_AMOUNT
@@ -148,7 +150,7 @@ export class Bot {
       ],
       'auto'
     );
-    this.logger.info({
+    await this.logger.info({
       claim: {
         atom: `${new Decimal(tx.events[10].attributes[2].value).div(
           DENOM_AMOUNT
@@ -173,7 +175,7 @@ export class Bot {
 
   async getTokenBalance(denom: string): Promise<number> {
     const tx = await this.cosmwasmClient.getBalance(this.signerAddress, denom);
-    return new Decimal(tx.amount).div(DENOM_AMOUNT).toNumber();
+    return new Decimal(tx.amount).div(DENOM_AMOUNT).floor().toNumber();
   }
 
   async getPairs(contract: string): Promise<number[]> {
