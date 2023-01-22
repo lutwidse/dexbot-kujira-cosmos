@@ -38,6 +38,14 @@ export function msg_submit_bid(premium: number) {
   };
 }
 
+export function msg_retract_bid(bids_idx: string) {
+  return {
+    retract_bid: {
+      bid_idx: bids_idx
+    }
+  };
+}
+
 export function msg_claim_liquidations(bids_idxs: string[]) {
   return {
     claim_liquidations: {

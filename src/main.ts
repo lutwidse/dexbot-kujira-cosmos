@@ -35,7 +35,20 @@ bot.then(function (b) {
             // TODO: 他の清算者から入札の設定を取得して、PremiumとAmountを推定後にpremiumWithPriceImpactを調整する
             await b.submitBid(premiumWithPriceImpact, uskBalance);
           }
-          // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
+      // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
+      for (let i of bids) {
+        const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
+        const priceImpact = await b.getPriceImpact(
+          pairs[0],
+          pairs[1],
+          new Decimal(i['amount']).div(DENOM_AMOUNT).toNumber(),
+          'cosmos'
+        );
+        // 入札のプレミアムよりpriceImpactが大きい場合は入札をキャンセル
+        console.log('[CHECK] bid premium < priceImpact');
+        if (i['premium_slot'] < priceImpact) {
+          await b.retractBid(i['idx']);
+          bids.splice(bids.indexOf(i, 0));
         }
       }
 

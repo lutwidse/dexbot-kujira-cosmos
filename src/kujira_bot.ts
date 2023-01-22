@@ -7,6 +7,7 @@ const { toUtf8 } = require('@cosmjs/encoding');
 import Decimal from 'decimal.js';
 import {
   msg_claim_liquidations,
+  msg_retract_bid,
   msg_submit_bid,
   msg_swap
 } from './msg_wrapper';
@@ -108,6 +109,30 @@ export class Bot {
     this.logger.info({ bid: { usk: `${bid_amount}}` } });
   }
 
+  async retractBid(idx: string) {
+    const tx = await this.client.signAndBroadcast(
+      this.signerAddress,
+      [
+        {
+          typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+          value: MsgExecuteContract.fromPartial({
+            sender: this.signerAddress,
+            contract: ORCA_MARKET_USK_ATOM_CONTRACT,
+            msg: toUtf8(JSON.stringify(msg_retract_bid(idx)))
+          })
+        }
+      ],
+      'auto'
+    );
+    this.logger.info({
+      retract: {
+        usk: `${new Decimal(tx.events[10].attributes[3].value).div(
+          DENOM_AMOUNT
+        )}}`
+      }
+    });
+  }
+
   async claimLiquidations(idxs: string[]) {
     const tx = await this.client.signAndBroadcast(
       this.signerAddress,
@@ -193,10 +218,13 @@ export class Bot {
     return priceImpact.toNumber();
   }
 
-  async getPremiumWithPriceImpact(
-    contract: string,
-    uskBalance: number
-  ): Promise<number> {
+  async getPremiumWithPriceImpact({
+    contract,
+    uskBalance
+  }: {
+    contract: string;
+    uskBalance: number;
+  }): Promise<number> {
     const pairs = await this.getPairs(contract);
     const priceImpact = new Decimal(
       await this.getPriceImpact(
