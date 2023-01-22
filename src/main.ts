@@ -48,8 +48,8 @@ bot.then(function (b) {
         }
       }
 
+      const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
       for (let i of bids) {
-        const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
         const priceImpact = await b.getPriceImpact(
           pairs[0],
           pairs[1],
