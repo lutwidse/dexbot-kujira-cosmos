@@ -47,7 +47,6 @@ bot.then(function (b) {
         }
       }
 
-      // TODO: プライスインパクトの確認から入札を自動でキャンセルできるようにする
       for (let i of bids) {
         const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
         const priceImpact = await b.getPriceImpact(
@@ -77,6 +76,8 @@ bot.then(function (b) {
         }
       }
 
+      // TODO: 清算毎に個別に処理したほうがいいかもしれないので検討
+      // 清算済み入札の受け取り
       console.log('[CHECK] bidsIdxs length > 0');
       if (bidsIdxs.length > 0) {
         await b.claimLiquidations(bidsIdxs);
