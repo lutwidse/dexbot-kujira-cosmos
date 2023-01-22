@@ -47,7 +47,6 @@ bot.then(function (b) {
           }
         }
       }
-      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       for (let i of bids) {
         const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
@@ -65,7 +64,6 @@ bot.then(function (b) {
           bids.splice(bids.indexOf(i, 0));
         }
       }
-      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       // 清算済み入札の確認
       let bidsClaimableIdxs = [];
@@ -78,7 +76,6 @@ bot.then(function (b) {
           premiumAvg += parseInt(i['premium']);
         }
       }
-      await delay(RATELIMIT_INSIDE_SEC * 1000);
 
       // TODO: 清算毎に個別に処理したほうがいいかもしれないので検討
       // 清算済み入札の受け取り
