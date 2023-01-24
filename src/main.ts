@@ -17,6 +17,8 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
+
 (async () => {
   console.log('[DO] botClientFactory');
   const bot = await botClientFactory();
@@ -37,7 +39,7 @@ function delay(ms: number) {
           console.log('[GET] premiumWithPriceImpact');
           const premiumWithPriceImpact = await bot.getPremiumWithPriceImpact({
             contract: BOW_ATOM_USK_CONTRACT,
-            uskBalance
+            uskBalance: uskBalance
           });
           // premiumWithPriceImpactの確認・詳しくはgetPremiumWithPriceImpactを参照
           console.log('[CHECK] premiumWithPriceImpact !=0');
@@ -55,7 +57,7 @@ function delay(ms: number) {
         const priceImpact = await bot.getPriceImpact(
           pairs[0],
           pairs[1],
-          i['amount'],
+          new RoundDecimal(i['amount']).div(DENOM_AMOUNT).floor().toNumber(),
           'cosmos'
         );
         // 入札のプレミアムよりpriceImpactが大きい場合は入札をキャンセル
