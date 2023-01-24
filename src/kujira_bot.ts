@@ -12,12 +12,12 @@ import {
   msg_swap
 } from './msg_wrapper';
 import {
-  RPC_ENDPOINT,
   MNEMONIC,
   DENOM_AMOUNT,
   ORCA_MARKET_USK_ATOM_CONTRACT,
   USK_DENOM,
-  BID_PREMIUM_THRESHOLD
+  BID_PREMIUM_THRESHOLD,
+  RPC_ENDPOINT
 } from './config';
 const axios = require('axios');
 import { Logger } from 'tslog';

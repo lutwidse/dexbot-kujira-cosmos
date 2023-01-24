@@ -1,3 +1,5 @@
+//https://docs.kujira.app/validators/community-tooling
+// I hate rate limitation :(
 export const RPC_ENDPOINT = 'https://rpc.cosmos.directory/kujira';
 export const MNEMONIC = '...';
 
@@ -31,5 +33,6 @@ export const BID_PREMIUM_THRESHOLD = 7;
 export const BID_MAX = 5;
 export const BID_MIN_USK = 1;
 
-export const RATELIMIT_SEC = 60;
-export const RATELIMIT_INSIDE_SEC = 5;
+// Unknown because there is no docs
+export const RATELIMIT_DELAY = 60;
+export const RATELIMIT_RPC_ROTATE = 30;

@@ -3,11 +3,11 @@ import {
   USK_DENOM,
   BID_MAX,
   BID_MIN_USK,
-  RATELIMIT_SEC,
+  RATELIMIT_DELAY,
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
   DENOM_AMOUNT,
-  RATELIMIT_INSIDE_SEC
+  RATELIMIT_RPC_ROTATE
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
@@ -17,24 +17,26 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const bot = botClientFactory();
-bot.then(function (b) {
-  (async () => {
+(async () => {
+  let bot = await botClientFactory();
+  while (true) {
+    console.log('[DO] botClientFactory');
+    let botCnt = 0;
     while (true) {
       // 入札の確認
       console.log('[CHECK] start');
       console.log('[GET] bids');
-      const bids = await b.getBids();
+      const bids = await bot.getBids();
       // 入札の注文数が最大に達していないなら新規入札を発行
       console.log('[CHECK] bids length < BID_MAX');
       if (bids.length < BID_MAX) {
         console.log('[GET] uskBalance');
-        const uskBalance = await b.getTokenBalance(USK_DENOM);
+        const uskBalance = await bot.getTokenBalance(USK_DENOM);
         // USKの残高がBID_MIN_USKを上回るなら新規入札の発行を継続
         console.log('[CHECK] uskBalance > BID_MIN_USK');
         if (uskBalance > BID_MIN_USK) {
           console.log('[GET] premiumWithPriceImpact');
-          const premiumWithPriceImpact = await b.getPremiumWithPriceImpact({
+          const premiumWithPriceImpact = await bot.getPremiumWithPriceImpact({
             contract: BOW_ATOM_USK_CONTRACT,
             uskBalance
           });
@@ -43,14 +45,14 @@ bot.then(function (b) {
           if (premiumWithPriceImpact != 0) {
             // TODO: 他の清算者から入札の設定を取得して、PremiumとAmountを推定後にpremiumWithPriceImpactを調整する
             console.log('[DO] submitBid');
-            await b.submitBid(premiumWithPriceImpact, uskBalance);
+            await bot.submitBid(premiumWithPriceImpact, uskBalance);
           }
         }
       }
 
-      const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
+      const pairs = await bot.getPairs(BOW_ATOM_USK_CONTRACT);
       for (let i of bids) {
-        const priceImpact = await b.getPriceImpact(
+        const priceImpact = await bot.getPriceImpact(
           pairs[0],
           pairs[1],
           new Decimal(i['amount']).div(DENOM_AMOUNT).floor().toNumber(),
@@ -60,7 +62,7 @@ bot.then(function (b) {
         console.log('[CHECK] bid premium < priceImpact');
         if (i['premium_slot'] < priceImpact) {
           console.log('[DO] retractBid');
-          await b.retractBid(i['idx']);
+          await bot.retractBid(i['idx']);
           bids.splice(bids.indexOf(i, 0));
         }
       }
@@ -81,30 +83,36 @@ bot.then(function (b) {
       // 清算済み入札の受け取り
       console.log('[CHECK] bidsClaimableIdxs length > 0');
       if (bidsClaimableIdxs.length > 0) {
-        await b.claimLiquidations(bidsClaimableIdxs);
+        await bot.claimLiquidations(bidsClaimableIdxs);
         console.log('[GET] atomBalance');
-        const atomBalance = await b.getTokenBalance(ATOM_DENOM);
+        const atomBalance = await bot.getTokenBalance(ATOM_DENOM);
         // プライスインパクトの確認
         console.log('[GET] pairs');
-        const pairs = await b.getPairs(BOW_ATOM_USK_CONTRACT);
+        const pairs = await bot.getPairs(BOW_ATOM_USK_CONTRACT);
         console.log('[GET] priceImpact');
-        const priceImpact = await b.getPriceImpact(
+        const priceImpact = await bot.getPriceImpact(
           pairs[0],
           pairs[1],
           atomBalance,
           'cosmos'
         );
         console.log('[CHECK] priceImapct < premiumAvg');
+        // プライスインパクトよりも入札のプレミアが高いならスワップ
         if (priceImpact < premiumAvg) {
           // 清算したATOMをUSKにスワップ
           console.log('[DO] swap');
-          await b.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
+          await bot.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
         } else {
           // TODO: アラートの追加
         }
       }
-      await delay(RATELIMIT_SEC * 1000);
+      await delay(RATELIMIT_DELAY * 1000);
       console.log('');
+      botCnt++;
+      if (botCnt == RATELIMIT_RPC_ROTATE) {
+        bot = await botClientFactory();
+        botCnt = 0;
+      }
     }
-  })();
-});
+  }
+})();
