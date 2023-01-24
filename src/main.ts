@@ -82,11 +82,10 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
       }
 
       // 清算済み入札の受け取り
-      console.log('[CHECK] bidsClaimableIdxs length > 0');
+      console.log('[CHECK] bidsClaimable length > 0');
       if (bidsClaimable[0].length > 0) {
         await bot.claimLiquidations(bidsClaimable[0]);
-        console.log('[GET] atomBalance');
-        console.log('[CHECK] priceImapct < premiums');
+        console.log('[CHECK] priceImpact < premiums');
         // プライスインパクトよりも入札のプレミアが高いならスワップ
         for (let i = 0; i < bidsClaimable.length; i++) {
           // 清算済み担保のスワップ
