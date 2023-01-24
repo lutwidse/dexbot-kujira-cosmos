@@ -17,6 +17,7 @@ import {
   ORCA_MARKET_USK_ATOM_CONTRACT,
   USK_DENOM,
   BID_PREMIUM_THRESHOLD,
+  RPC_ENDPOINT
 } from './config';
 const axios = require('axios');
 import { Logger } from 'tslog';
@@ -259,14 +260,14 @@ export class Bot {
   }
 }
 
-export async function botClientFactory(RPC): Promise<Bot> {
+export async function botClientFactory(): Promise<Bot> {
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(MNEMONIC, {
     prefix: 'kujira'
   });
   const [{ address: signerAddress }] = await signer.getAccounts();
 
   const client = await SigningStargateClient.connectWithSigner(
-    RPC,
+    RPC_ENDPOINT,
     signer,
     {
       registry: registry,
@@ -274,7 +275,7 @@ export async function botClientFactory(RPC): Promise<Bot> {
     }
   );
 
-  const cosmwasmClient = await CosmWasmClient.connect(RPC);
+  const cosmwasmClient = await CosmWasmClient.connect(RPC_ENDPOINT);
 
   return new Bot(signer, client, cosmwasmClient, signerAddress);
 }

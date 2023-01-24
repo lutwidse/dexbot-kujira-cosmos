@@ -1,18 +1,4 @@
-//https://docs.kujira.app/validators/community-tooling
-// I hate rate limitation :(
-export const RPC_ENDPOINTS = [
-  'https://kuji-rpc.kleomedes.network/',
-  'https://kujira-rpc.lavenderfive.com/',
-  //'https://kujira-rpc.polkachu.com/',
-  'https://kujira-rpc.theamsolutions.info/',
-  'https://kujira.mainnet.rpc.autostake.net/',
-  'https://kujira.rpc.kjnodes.com/',
-  'https://rpc-kujira.mintthemoon.xyz/',
-  'https://rpc-kujira.starsquid.io/',
-  'https://rpc-kujira.synergynodes.com/',
-  'https://rpc.kaiyo.kujira.setten.io/',
-  'https://kujira.rpc.kjnodes.com/'
-];
+export const RPC_ENDPOINT = 'https://rpc.cosmos.directory/kujira';
 export const MNEMONIC = '...';
 
 export const DENOM_AMOUNT = 1000000;
@@ -45,6 +31,4 @@ export const BID_PREMIUM_THRESHOLD = 7;
 export const BID_MAX = 5;
 export const BID_MIN_USK = 1;
 
-// Unknown because there is no docs
 export const RATELIMIT_DELAY = 60;
-export const RATELIMIT_RPC_ROTATE = 30;
