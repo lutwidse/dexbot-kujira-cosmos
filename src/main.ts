@@ -83,7 +83,7 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
 
       // 清算済み入札の受け取り
       console.log('[CHECK] bidsClaimable length > 0');
-      if (bidsClaimable[0].length > 0) {
+      if (bidsClaimable.length >= 3) {
         await bot.claimLiquidations(bidsClaimable[0]);
         console.log('[CHECK] priceImpact < premiums');
         // プライスインパクトよりも入札のプレミアが高いならスワップ
@@ -117,6 +117,7 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
     } catch (err) {
       // TODO: あまりにも酷いエラー処理 俺じゃなきゃ見逃しちゃうね
       console.log('[DO] Retry');
+      console.log(err);
       console.log('');
       await delay(RATELIMIT_RETRY_DELAY * 1000);
     }
