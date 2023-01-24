@@ -108,9 +108,9 @@ export class Bot {
 
     await this.logger.info({
       bid: {
-        usk: `${new Decimal(tx.events[13].attributes[3].value).div(
-          DENOM_AMOUNT
-        )}}`
+        // `${new Decimal(tx.events[13].attributes[3].value).div(DENOM_AMOUNT)}}`
+        // Error: {"code":-32603,"message":"Internal error","data":"transaction indexing is disabled"}
+        usk: bid_amount
       }
     });
   }
