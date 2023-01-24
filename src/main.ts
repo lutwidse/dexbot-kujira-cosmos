@@ -7,7 +7,8 @@ import {
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
   DENOM_AMOUNT,
-  RPC_ENDPOINTS
+  RPC_ENDPOINTS,
+  RATELIMIT_RPC_ROTATE
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
@@ -110,7 +111,7 @@ function delay(ms: number) {
         await delay(RATELIMIT_DELAY * 1000);
         console.log('');
         botCnt++;
-        if (botCnt == 60) {
+        if (botCnt == RATELIMIT_RPC_ROTATE) {
           break;
         }
       }
