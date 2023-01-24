@@ -1,6 +1,18 @@
 //https://docs.kujira.app/validators/community-tooling
 // I hate rate limitation :(
-export const RPC_ENDPOINT = 'https://rpc.cosmos.directory/kujira';
+export const RPC_ENDPOINTS = [
+  'https://kuji-rpc.kleomedes.network/',
+  'https://kujira-rpc.lavenderfive.com/',
+  //'https://kujira-rpc.polkachu.com/',
+  'https://kujira-rpc.theamsolutions.info/',
+  'https://kujira.mainnet.rpc.autostake.net/',
+  'https://kujira.rpc.kjnodes.com/',
+  'https://rpc-kujira.mintthemoon.xyz/',
+  'https://rpc-kujira.starsquid.io/',
+  'https://rpc-kujira.synergynodes.com/',
+  'https://rpc.kaiyo.kujira.setten.io/',
+  'https://kujira.rpc.kjnodes.com/'
+];
 export const MNEMONIC = '...';
 
 export const DENOM_AMOUNT = 1000000;
