@@ -4,6 +4,7 @@ import {
   BID_MAX,
   BID_MIN_USK,
   RATELIMIT_DELAY,
+  RATELIMIT_RETRY_DELAY,
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
   DENOM_AMOUNT
@@ -54,7 +55,7 @@ function delay(ms: number) {
         const priceImpact = await bot.getPriceImpact(
           pairs[0],
           pairs[1],
-          new Decimal(i['amount']).div(DENOM_AMOUNT).floor().toNumber(),
+          i['amount'],
           'cosmos'
         );
         // 入札のプレミアムよりpriceImpactが大きい場合は入札をキャンセル
@@ -67,46 +68,48 @@ function delay(ms: number) {
       }
 
       // 清算済み入札の確認
-      let bidsClaimableIdxs = [];
-      let premiumAvg = 0;
+      let bidsClaimable = [[], [], []];
       // 入札の平均プレミアム確認
       console.log('[GET] bidsClaimableIdxs & premiumAvg');
       for (let i of bids) {
         if (parseFloat(i['pending_liquidated_collateral']) > 0) {
-          bidsClaimableIdxs.push(i['idx']);
-          premiumAvg += parseInt(i['premium']);
+          bidsClaimable[0].push(i['idx']);
+          bidsClaimable[1].push(i['pending_liquidated_collateral']);
+          bidsClaimable[2].push(i['premium_slot']);
         }
       }
 
-      // TODO: 清算毎に個別に処理したほうがいいかもしれないので検討
       // 清算済み入札の受け取り
       console.log('[CHECK] bidsClaimableIdxs length > 0');
-      if (bidsClaimableIdxs.length > 0) {
-        await bot.claimLiquidations(bidsClaimableIdxs);
+      if (bidsClaimable[0].length > 0) {
+        await bot.claimLiquidations(bidsClaimable[0]);
         console.log('[GET] atomBalance');
-      }
-
-      // 清算済み担保のスワップ
-      const atomBalance = await bot.getTokenBalance(ATOM_DENOM);
-      // プライスインパクトの確認
-      console.log('[GET] pairs');
-      pairs = await bot.getPairs(BOW_ATOM_USK_CONTRACT);
-      console.log('[GET] priceImpact');
-      const priceImpact = await bot.getPriceImpact(
-        pairs[0],
-        pairs[1],
-        atomBalance,
-        'cosmos'
-      );
-
-      console.log('[CHECK] priceImapct < premiumAvg');
-      // プライスインパクトよりも入札のプレミアが高いならスワップ
-      if (priceImpact < premiumAvg) {
-        // 清算したATOMをUSKにスワップ
-        console.log('[DO] swap');
-        await bot.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
-      } else {
-        // TODO: アラートの追加
+        console.log('[CHECK] priceImapct < premiums');
+        // プライスインパクトよりも入札のプレミアが高いならスワップ
+        for (let i = 0; i < bidsClaimable.length; i++) {
+          // 清算済み担保のスワップ
+          // プライスインパクトの確認
+          console.log('[GET] pairs');
+          pairs = await bot.getPairs(BOW_ATOM_USK_CONTRACT);
+          console.log('[GET] priceImpact');
+          const priceImpact = await bot.getPriceImpact(
+            pairs[0],
+            pairs[1],
+            bidsClaimable[1][i],
+            'cosmos'
+          );
+          if (priceImpact < bidsClaimable[2][i]) {
+            // 清算したATOMをUSKにスワップ
+            console.log('[DO] swap');
+            await bot.swap(
+              bidsClaimable[1][i],
+              FIN_ATOM_USK_CONTRACT,
+              ATOM_DENOM
+            );
+          } else {
+            // TODO: アラートの追加
+          }
+        }
       }
       await delay(RATELIMIT_DELAY * 1000);
       console.log('');
@@ -114,6 +117,7 @@ function delay(ms: number) {
       // TODO: あまりにも酷いエラー処理 俺じゃなきゃ見逃しちゃうね
       console.log('[DO] Retry');
       console.log('');
+      await delay(RATELIMIT_RETRY_DELAY * 1000);
     }
   }
 })();
