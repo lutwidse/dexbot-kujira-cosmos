@@ -82,37 +82,7 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
         }
       }
 
-      // 清算済み入札の受け取り
-      console.log('[CHECK] bidsClaimable length > 0');
-      if (bidsClaimable.length >= 3) {
-        await bot.claimLiquidations(bidsClaimable[0]);
-        console.log('[CHECK] priceImpact < premiums');
-        // プライスインパクトよりも入札のプレミアが高いならスワップ
-        for (let i = 0; i < bidsClaimable.length; i++) {
-          // 清算済み担保のスワップ
-          // プライスインパクトの確認
-          console.log('[GET] pairs');
-          pairs = await bot.getPairs(BOW_ATOM_USK_CONTRACT);
-          console.log('[GET] priceImpact');
-          const priceImpact = await bot.getPriceImpact(
-            pairs[0],
-            pairs[1],
-            bidsClaimable[1][i],
-            'cosmos'
-          );
-          if (priceImpact < bidsClaimable[2][i]) {
-            // 清算したATOMをUSKにスワップ
-            console.log('[DO] swap');
-            await bot.swap(
-              bidsClaimable[1][i],
-              FIN_ATOM_USK_CONTRACT,
-              ATOM_DENOM
-            );
-          } else {
-            // TODO: axlUSDCにスワップ
-          }
-        }
-      }
+        if (bidsClaimable[0].length != 0) {
 
       await delay(RATELIMIT_DELAY * 1000);
       console.log('');
