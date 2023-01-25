@@ -7,7 +7,8 @@ import {
   RATELIMIT_RETRY_DELAY,
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
-  DENOM_AMOUNT
+  DENOM_AMOUNT,
+  EMERGENCY_SWAP
 } from './config';
 import './kujira_bot';
 import { botClientFactory } from './kujira_bot';
@@ -108,18 +109,31 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
               ATOM_DENOM
             );
           } else {
-            // TODO: アラートの追加
+            // TODO: axlUSDCにスワップ
           }
         }
       }
+
       await delay(RATELIMIT_DELAY * 1000);
       console.log('');
     } catch (err) {
       // TODO: あまりにも酷いエラー処理 俺じゃなきゃ見逃しちゃうね
+      // RPC側が定期的に死ぬのでどうしようもない
       console.log('[DO] Retry');
       console.log(err);
       console.log('');
       await delay(RATELIMIT_RETRY_DELAY * 1000);
+
+      // RPC側が定期的に死ぬのでスワップに失敗した場合の緊急処理
+      if (EMERGENCY_SWAP) {
+        console.log('[GET] atomBalance');
+        const atomBalance = await bot.getTokenBalance(ATOM_DENOM);
+        // 清算したATOMをUSKにスワップ
+        if (atomBalance > 0) {
+          console.log('[DO] swap');
+          await bot.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
+        }
+      }
     }
   }
 })();
