@@ -31,7 +31,5 @@ export const BID_PREMIUM_THRESHOLD = 5;
 export const BID_MAX = 5;
 export const BID_MIN_USK = 1;
 
-export const EMERGENCY_SWAP = true
-
 export const RATELIMIT_DELAY = 60;
 export const RATELIMIT_RETRY_DELAY = 30;
