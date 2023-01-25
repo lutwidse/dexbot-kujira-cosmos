@@ -4,7 +4,6 @@ import {
   BID_MAX,
   BID_MIN_USK,
   RATELIMIT_DELAY,
-  RATELIMIT_RETRY_DELAY,
   FIN_ATOM_USK_CONTRACT,
   BOW_ATOM_USK_CONTRACT,
   DENOM_AMOUNT
@@ -115,6 +114,15 @@ const RoundDecimal = Decimal.set({ precision: 5, rounding: 4 });
           }
         }
 
+        // FAQを参照
+        /*
+        console.log('[GET] atomBalance');
+        const atomBalance = await bot.getTokenBalance(ATOM_DENOM);
+        if (atomBalance > 0) {
+          console.log('[DO] swap');
+          await bot.swap(atomBalance, FIN_ATOM_USK_CONTRACT, ATOM_DENOM);
+        }
+        */
         await delay(RATELIMIT_DELAY * 1000);
         console.log('');
       }
